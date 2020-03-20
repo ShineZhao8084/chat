@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dj.chat.main.mapper.BaseMessageTypeMapper">
+  <resultMap id="BaseResultMap" type="com.dj.chat.main.bean.BaseMessageType">
+    <id column="MESSSGE_TYPE_ID" jdbcType="INTEGER" property="messsgeTypeId" />
+    <result column="MESSSGE_TYPE_NAME" jdbcType="VARCHAR" property="messsgeTypeName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    MESSSGE_TYPE_ID, MESSSGE_TYPE_NAME
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from base_message_type
+    where MESSSGE_TYPE_ID = #{messsgeTypeId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from base_message_type
+    where MESSSGE_TYPE_ID = #{messsgeTypeId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dj.chat.main.bean.BaseMessageType">
+    insert into base_message_type (MESSSGE_TYPE_ID, MESSSGE_TYPE_NAME)
+    values (#{messsgeTypeId,jdbcType=INTEGER}, #{messsgeTypeName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.dj.chat.main.bean.BaseMessageType">
+    insert into base_message_type
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="messsgeTypeId != null">
+        MESSSGE_TYPE_ID,
+      </if>
+      <if test="messsgeTypeName != null">
+        MESSSGE_TYPE_NAME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="messsgeTypeId != null">
+        #{messsgeTypeId,jdbcType=INTEGER},
+      </if>
+      <if test="messsgeTypeName != null">
+        #{messsgeTypeName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dj.chat.main.bean.BaseMessageType">
+    update base_message_type
+    <set>
+      <if test="messsgeTypeName != null">
+        MESSSGE_TYPE_NAME = #{messsgeTypeName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where MESSSGE_TYPE_ID = #{messsgeTypeId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dj.chat.main.bean.BaseMessageType">
+    update base_message_type
+    set MESSSGE_TYPE_NAME = #{messsgeTypeName,jdbcType=VARCHAR}
+    where MESSSGE_TYPE_ID = #{messsgeTypeId,jdbcType=INTEGER}
+  </update>
+</mapper>
