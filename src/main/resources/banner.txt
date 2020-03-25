@@ -7,4 +7,4 @@
 
  Darkblue Platform (v0.0.1.RELEASE)
  Based on: Spring Boot (v2.1.4.RELEASE)
- Main Developer: zhaoyao@zbiti.com
+ Main Developer: zhaoyao3@asiainfo.com
