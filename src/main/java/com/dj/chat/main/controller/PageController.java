@@ -21,6 +21,8 @@ public class PageController {
         Map<String, Object> model = new HashMap<String, Object>();
         SelfUserDetails userDetails = (SelfUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         model.put("accountId", userDetails.getAccountId());
+        model.put("loginName", userDetails.getUsername());
+        model.put("email", userDetails.getEmail());
         return new ModelAndView("index", model);
     }
 

@@ -42,11 +42,6 @@ public class WebSocketServer {
         }
         webSocketMap.put(accountId, this);
         log.info("用户连接:" + accountId + ",当前在线人数为:" + getOnlineCount());
-        try {
-            sendMessage("连接成功");
-        } catch (IOException e) {
-            log.error("用户:" + accountId + ",网络异常!!!!!!");
-        }
     }
 
     /**

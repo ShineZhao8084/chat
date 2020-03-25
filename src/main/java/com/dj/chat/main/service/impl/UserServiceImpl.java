@@ -14,7 +14,7 @@ public class UserServiceImpl implements UserService {
     private BaseAccountMapper baseAccountMapper;
 
     @Override
-    public BaseAccount loadUserByUsername(String email) {
-        return baseAccountMapper.loadUserByUsername(email);
+    public BaseAccount loadUserByUsername(String loginName) {
+        return baseAccountMapper.loadUserByUsername(loginName);
     }
 }

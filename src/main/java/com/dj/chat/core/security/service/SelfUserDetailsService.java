@@ -17,10 +17,10 @@ public class SelfUserDetailsService implements UserDetailsService {
     private UserService userService;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String loginName) throws UsernameNotFoundException {
 
         SelfUserDetails userInfo = new SelfUserDetails();
-        BaseAccount user = userService.loadUserByUsername(email);
+        BaseAccount user = userService.loadUserByUsername(loginName);
         if (user == null || user.getState() == -1) {
             throw new UsernameNotFoundException("未找到该用户！");
         }
@@ -36,7 +36,8 @@ public class SelfUserDetailsService implements UserDetailsService {
         // TODO 密码过期
 
         userInfo.setAccountId(user.getAccountId());
-        userInfo.setUsername(user.getEmail());
+        userInfo.setUsername(user.getLoginName());
+        userInfo.setEmail(user.getEmail());
         userInfo.setPassword(user.getLoginPwd());
 
 

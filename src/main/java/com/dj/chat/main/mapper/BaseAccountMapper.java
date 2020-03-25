@@ -20,5 +20,5 @@ public interface BaseAccountMapper {
 
     int updateByPrimaryKey(BaseAccount record);
 
-    BaseAccount loadUserByUsername(String email);
+    BaseAccount loadUserByUsername(String loginName);
 }

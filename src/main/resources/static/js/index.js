@@ -35,14 +35,29 @@ function listAllMyFriend() {
             result = JSON.parse(result);
             var msg = result.msg;
             if ("200" === result.status) {
-                $.toast({
-                    position: 'top-right',
-                    stack: 10,
-                    heading: '成功了',
-                    text: msg,
-                    showHideTransition: 'fade',
-                    icon: 'success'
-                })
+                var finalResult = result.result;
+                var finalHtml = "";
+                for (var i in finalResult) {
+                    console.log(JSON.stringify(finalResult[i].friendName))
+                    var html =  "<li class=\"chat-list-item\" style=\"cursor: default\">";
+                    html +=     "   <figure class=\"avatar user-online\"><img src=\"/images/user-2.png\" alt=\"image\"></figure>" +
+                                "   <div class=\"list-body\">" +
+                                "       <div class=\"chat-bttn\"><h3 class=\"mb-1 mt-1\">" + finalResult[i].friendName + "</h3><p>" + finalResult[i].baseAccount.email + "</p></div>" +
+                                "       <div class=\"list-action text-right\">" +
+                                "           <a href=\"#\" class=\"btn-plus dropdown-toggle\" data-toggle=\"dropdown\"><i class=\"ti-plus\"></i></a>" +
+                                "           <div class=\"dropdown-menu dropdown-menu-right\">" +
+                                "           <a href=\"#\" class=\"dropdown-item\" id=\"addfriend-bttn\">发起会话</a>" +
+                                "           <a href=\"#\" class=\"dropdown-item\" id=\"addfriend-bttn\">查看资料</a>" +
+                                "           <a href=\"#\" class=\"dropdown-item\">修改备注</a>" +
+                                "           <div class=\"dropdown-divider\"></div>" +
+                                "           <a href=\"#\" class=\"dropdown-item text-danger\">删除好友</a>" +
+                                "       </div>" +
+                                "   </div>" +
+                                "</li>";
+                    finalHtml += html;
+                }
+                $("#friendsList").html(finalHtml);
+
             } else {
                 console.log(result)
 

@@ -13,6 +13,7 @@ public class SelfUserDetails implements UserDetails, Serializable {
     private String username;
     private String password;
     private Long accountId;
+    private String email;
     private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
@@ -38,6 +39,14 @@ public class SelfUserDetails implements UserDetails, Serializable {
 
     public Long getAccountId() {
         return accountId;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     @Override

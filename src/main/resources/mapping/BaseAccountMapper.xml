@@ -31,7 +31,7 @@
     ,
     <include refid="Blob_Column_List" />
     from base_account
-    where ACCOUNT_ID = #{accountId,jdbcType=BIGINT}
+    where ACCOUNT_ID = #{loginName,jdbcType=BIGINT}
   </select>
 
   <select id="loadUserByUsername" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
@@ -40,7 +40,7 @@
     ,
     <include refid="Blob_Column_List" />
     from base_account
-    where EMAIL = #{email, jdbcType=VARCHAR}
+    where LOGIN_NAME = #{loginName, jdbcType=VARCHAR}
   </select>
 
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
