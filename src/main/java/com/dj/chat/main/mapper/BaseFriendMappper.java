@@ -1,7 +1,10 @@
 package com.dj.chat.main.mapper;
 
 import com.dj.chat.main.bean.BaseFriend;
+import com.dj.chat.main.bean.BaseFriendWithAccount;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 @Mapper
 public interface BaseFriendMappper {
@@ -17,5 +20,7 @@ public interface BaseFriendMappper {
     int updateByPrimaryKeySelective(BaseFriend record);
 
     int updateByPrimaryKey(BaseFriend record);
+
+    List<BaseFriendWithAccount> listAllMyFriends(Long accountId);
 
 }

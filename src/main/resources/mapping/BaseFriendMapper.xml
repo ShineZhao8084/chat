@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dj.chat.main.mapper.BaseFriendMappper">
+
+    <resultMap id="BaseResultMap" type="com.dj.chat.main.bean.BaseFriend">
+        <id column="FRIEND_ID" jdbcType="BIGINT" property="friendId"/>
+        <result column="FRIEND_ACCOUNT_ID" jdbcType="BIGINT" property="friendAccountId"/>
+        <result column="FRIEND_MYSELF_ID" jdbcType="BIGINT" property="friendMyselfId"/>
+        <result column="FRIEND_NAME" jdbcType="VARCHAR" property="friendName"/>
+    </resultMap>
+
+    <resultMap id="BaseResultMapWithAccount" type="com.dj.chat.main.bean.BaseFriendWithAccount">
+        <id column="FRIEND_ID" jdbcType="BIGINT" property="friendId"/>
+        <result column="FRIEND_ACCOUNT_ID" jdbcType="BIGINT" property="friendAccountId"/>
+        <result column="FRIEND_MYSELF_ID" jdbcType="BIGINT" property="friendMyselfId"/>
+        <result column="FRIEND_NAME" jdbcType="VARCHAR" property="friendName"/>
+        <association property="baseAccount" javaType="com.dj.chat.main.bean.BaseAccount">
+            <id column="ACCOUNT_ID" jdbcType="BIGINT" property="accountId"/>
+            <result column="USER_NAME" jdbcType="VARCHAR" property="userName"/>
+            <result column="LOGIN_NAME" jdbcType="VARCHAR" property="loginName"/>
+            <result column="BIRTHDAY" jdbcType="TIMESTAMP" property="birthday"/>
+            <result column="PHONE" jdbcType="VARCHAR" property="phone"/>
+            <result column="EMAIL" jdbcType="VARCHAR" property="email"/>
+            <result column="PROFILE_PHOTO" jdbcType="BINARY" property="profilePhoto"/>
+        </association>
+    </resultMap>
+
+    <sql id="Base_Column_List">FRIEND_ID, FRIEND_ACCOUNT_ID, FRIEND_MYSELF_ID, FRIEND_NAME</sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from base_friend
+        where FRIEND_ID = #{friendId,jdbcType=BIGINT}
+    </select>
+
+    <select id="listAllMyFriends" parameterType="java.lang.Long" resultMap="BaseResultMapWithAccount">
+        SELECT
+            f.FRIEND_ID,
+            f.FRIEND_ACCOUNT_ID,
+            f.FRIEND_MYSELF_ID,
+            f.FRIEND_NAME,
+            a.ACCOUNT_ID,
+            a.USER_NAME,
+            a.LOGIN_NAME,
+            a.BIRTHDAY,
+            a.PHONE,
+            a.EMAIL,
+            a.PROFILE_PHOTO
+        FROM
+            base_friend f
+        LEFT JOIN base_account a ON f.FRIEND_ACCOUNT_ID = a.ACCOUNT_ID
+        where FRIEND_MYSELF_ID = #{accountId, jdbcType=BIGINT}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from base_friend
+        where FRIEND_ID = #{friendId,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.dj.chat.main.bean.BaseFriend">
+        insert into base_friend
+            (FRIEND_ID, FRIEND_ACCOUNT_ID, FRIEND_MYSELF_ID, FRIEND_NAME)
+        values
+            (#{friendId,jdbcType=BIGINT}, #{friendAccountId,jdbcType=BIGINT}, #{friendMyselfId,jdbcType=BIGINT}, #{friendName,jdbcType=VARCHAR})
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.dj.chat.main.bean.BaseFriend">
+        insert into base_friend
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="friendId != null">
+                FRIEND_ID,
+            </if>
+            <if test="friendAccountId != null">
+                FRIEND_ACCOUNT_ID,
+            </if>
+            <if test="friendMyselfId != null">
+                FRIEND_MYSELF_ID,
+            </if>
+            <if test="friendName != null">
+                FRIEND_NAME,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="friendId != null">
+                #{friendId,jdbcType=BIGINT},
+            </if>
+            <if test="friendAccountId != null">
+                #{friendAccountId,jdbcType=BIGINT},
+            </if>
+            <if test="friendMyselfId != null">
+                #{friendMyselfId,jdbcType=BIGINT},
+            </if>
+            <if test="friendName != null">
+                #{friendName,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.dj.chat.main.bean.BaseFriend">
+        update base_friend
+        <set>
+            <if test="friendAccountId != null">
+                FRIEND_ACCOUNT_ID = #{friendAccountId,jdbcType=BIGINT},
+            </if>
+            <if test="friendMyselfId != null">
+                FRIEND_MYSELF_ID = #{friendMyselfId,jdbcType=BIGINT},
+            </if>
+            <if test="friendName != null">
+                FRIEND_NAME = #{friendName,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where FRIEND_ID = #{friendId,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.dj.chat.main.bean.BaseFriend">
+        update base_friend
+        set FRIEND_ACCOUNT_ID = #{friendAccountId,jdbcType=BIGINT},
+            FRIEND_MYSELF_ID = #{friendMyselfId,jdbcType=BIGINT},
+            FRIEND_NAME = #{friendName,jdbcType=VARCHAR}
+        where FRIEND_ID = #{friendId,jdbcType=BIGINT}
+    </update>
+
+</mapper>

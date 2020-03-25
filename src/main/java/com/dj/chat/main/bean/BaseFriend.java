@@ -9,6 +9,7 @@ import java.util.Map;
  * @author 
  */
 public class BaseFriend implements Serializable {
+
     private Long friendId;
 
     private Long friendAccountId;

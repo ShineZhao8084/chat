@@ -12,6 +12,7 @@ import java.util.Set;
 public class SelfUserDetails implements UserDetails, Serializable {
     private String username;
     private String password;
+    private Long accountId;
     private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
@@ -33,6 +34,10 @@ public class SelfUserDetails implements UserDetails, Serializable {
     @Override
     public String getUsername() { // 最重点Ⅱ
         return this.username;
+    }
+
+    public Long getAccountId() {
+        return accountId;
     }
 
     @Override
@@ -61,6 +66,10 @@ public class SelfUserDetails implements UserDetails, Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
     public void setAuthorities(Set<? extends GrantedAuthority> authorities) {

@@ -1,5 +1,6 @@
 package com.dj.chat.main.controller;
 
+import com.dj.chat.core.security.bean.SelfUserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -18,8 +19,8 @@ public class PageController {
     public ModelAndView indexPage(HttpServletRequest request) {
         ModelAndView modelAndView = new ModelAndView("index");
         Map<String, Object> model = new HashMap<String, Object>();
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        model.put("email", userDetails.getUsername());
+        SelfUserDetails userDetails = (SelfUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        model.put("accountId", userDetails.getAccountId());
         return new ModelAndView("index", model);
     }
 

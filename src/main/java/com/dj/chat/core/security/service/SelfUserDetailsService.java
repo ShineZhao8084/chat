@@ -35,6 +35,7 @@ public class SelfUserDetailsService implements UserDetailsService {
 
         // TODO 密码过期
 
+        userInfo.setAccountId(user.getAccountId());
         userInfo.setUsername(user.getEmail());
         userInfo.setPassword(user.getLoginPwd());
 

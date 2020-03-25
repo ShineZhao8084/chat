@@ -24,10 +24,42 @@ $("#logout").click(function () {
 
 $(function () {
     openSocket();
+    listAllMyFriend();
 });
 
-var socket;
+function listAllMyFriend() {
+    $.ajax({
+        url: "/friend/" + $("#accountId").val(),
+        type: "POST",
+        success: function (result) {
+            result = JSON.parse(result);
+            var msg = result.msg;
+            if ("200" === result.status) {
+                $.toast({
+                    position: 'top-right',
+                    stack: 10,
+                    heading: '成功了',
+                    text: msg,
+                    showHideTransition: 'fade',
+                    icon: 'success'
+                })
+            } else {
+                console.log(result)
 
+                $.toast({
+                    position: 'top-right',
+                    stack: 10,
+                    heading: '出现问题了',
+                    text: msg,
+                    showHideTransition: 'fade',
+                    icon: 'error'
+                })
+            }
+        }
+    });
+}
+
+var socket;
 function openSocket() {
     if (typeof (WebSocket) == "undefined") {
         console.log("您的浏览器不支持WebSocket");
@@ -36,7 +68,7 @@ function openSocket() {
         //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
         //等同于socket = new WebSocket("ws://localhost:8888/xxxx/im/25");
         //var socketUrl="${request.contextPath}/im/"+$("#userId").val();
-        var socketUrl = "ws://10.73.240.25/imserver/" + $("#userId").val();
+        var socketUrl = "ws://10.73.240.25/imserver/" + $("#accountId").val();
         //socketUrl = socketUrl.replace("https", "ws").replace("http", "ws");
         console.log(socketUrl);
         if (socket != null) {
