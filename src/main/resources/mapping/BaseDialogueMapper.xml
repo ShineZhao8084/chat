@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dj.chat.main.mapper.BaseDialogueMapper">
+    <resultMap id="BaseResultMap" type="com.dj.chat.main.bean.BaseDialogue">
+        <id column="DIALOGUE_ID" jdbcType="BIGINT" property="dialogueId"/>
+        <result column="DIALOGUE_FRIEND_ID" jdbcType="BIGINT" property="dialogueFriendId"/>
+        <result column="DIALOGUE_MYSELF_ID" jdbcType="BIGINT" property="dialogueMyselfId"/>
+        <result column="LAST_MESSAGE_ID" jdbcType="BIGINT" property="lastMessageId"/>
+        <result column="LAST_READ_MESSAGE_CONTENT" jdbcType="VARCHAR" property="lastReadMessageContent"/>
+        <result column="LAST_READ_MESSAGE_ID" jdbcType="BIGINT" property="lastReadMessageId"/>
+        <result column="UNREAD_MESSAGE_COUNT" jdbcType="INTEGER" property="unreadMessageCount"/>
+    </resultMap>
+    <resultMap id="BaseResultMapWithFriendAndAccount" type="com.dj.chat.main.bean.BaseDialogueWithFriendAndAccount">
+        <id column="DIALOGUE_ID" jdbcType="BIGINT" property="dialogueId"/>
+        <result column="DIALOGUE_FRIEND_ID" jdbcType="BIGINT" property="dialogueFriendId"/>
+        <result column="DIALOGUE_MYSELF_ID" jdbcType="BIGINT" property="dialogueMyselfId"/>
+        <result column="LAST_MESSAGE_ID" jdbcType="BIGINT" property="lastMessageId"/>
+        <result column="LAST_READ_MESSAGE_CONTENT" jdbcType="VARCHAR" property="lastReadMessageContent"/>
+        <result column="LAST_READ_MESSAGE_ID" jdbcType="BIGINT" property="lastReadMessageId"/>
+        <association property="baseAccount" javaType="com.dj.chat.main.bean.BaseAccount">
+            <id column="ACCOUNT_ID" jdbcType="BIGINT" property="accountId"/>
+            <result column="USER_NAME" jdbcType="VARCHAR" property="userName"/>
+            <result column="LOGIN_NAME" jdbcType="VARCHAR" property="loginName"/>
+            <result column="BIRTHDAY" jdbcType="TIMESTAMP" property="birthday"/>
+            <result column="PHONE" jdbcType="VARCHAR" property="phone"/>
+            <result column="EMAIL" jdbcType="VARCHAR" property="email"/>
+            <result column="PROFILE_PHOTO" jdbcType="BINARY" property="profilePhoto"/>
+        </association>
+        <association property="baseFriend" javaType="com.dj.chat.main.bean.BaseFriend">
+            <id column="FRIEND_ID" jdbcType="BIGINT" property="friendId"/>
+            <result column="FRIEND_ACCOUNT_ID" jdbcType="BIGINT" property="friendAccountId"/>
+            <result column="FRIEND_MYSELF_ID" jdbcType="BIGINT" property="friendMyselfId"/>
+            <result column="FRIEND_NAME" jdbcType="VARCHAR" property="friendName"/>
+        </association>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        DIALOGUE_ID, DIALOGUE_FRIEND_ID, DIALOGUE_MYSELF_ID, LAST_MESSAGE_ID, LAST_READ_MESSAGE_CONTENT,
+        LAST_READ_MESSAGE_ID
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from base_dialogue
+        where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}
+    </select>
+
+    <select id="listAllMyDialogueByAccountId" parameterType="java.lang.Long" resultMap="BaseResultMapWithFriendAndAccount">
+        select
+        d.DIALOGUE_ID, d.DIALOGUE_FRIEND_ID, d.DIALOGUE_MYSELF_ID, d.LAST_MESSAGE_ID, d.LAST_READ_MESSAGE_CONTENT, d.LAST_READ_MESSAGE_ID,
+        a.ACCOUNT_ID, a.USER_NAME, a.LOGIN_NAME, a.BIRTHDAY, a.PHONE, a.EMAIL, a.PROFILE_PHOTO,
+        f.FRIEND_ID, f.FRIEND_ACCOUNT_ID, f.FRIEND_MYSELF_ID, f.FRIEND_NAME
+        from base_dialogue d
+        left join base_account a on d.DIALOGUE_FRIEND_ID = a.ACCOUNT_ID
+        left join base_friend f on d.DIALOGUE_FRIEND_ID = f.FRIEND_ACCOUNT_ID
+        where DIALOGUE_MYSELF_ID = #{accountId, jdbcType=BIGINT}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from base_dialogue
+        where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" parameterType="com.dj.chat.main.bean.BaseDialogue">
+        insert into base_dialogue (DIALOGUE_ID, DIALOGUE_FRIEND_ID, DIALOGUE_MYSELF_ID,
+        LAST_MESSAGE_ID, LAST_READ_MESSAGE_CONTENT, LAST_READ_MESSAGE_ID,
+        UNREAD_MESSAGE_COUNT)
+        values (#{dialogueId,jdbcType=BIGINT}, #{dialogueFriendId,jdbcType=BIGINT}, #{dialogueMyselfId,jdbcType=BIGINT},
+        #{lastMessageId,jdbcType=BIGINT}, #{lastReadMessageContent,jdbcType=VARCHAR},
+        #{lastReadMessageId,jdbcType=BIGINT},
+        #{unreadMessageCount,jdbcType=INTEGER})
+    </insert>
+    <insert id="insertSelective" parameterType="com.dj.chat.main.bean.BaseDialogue">
+        insert into base_dialogue
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="dialogueId != null">
+                DIALOGUE_ID,
+            </if>
+            <if test="dialogueFriendId != null">
+                DIALOGUE_FRIEND_ID,
+            </if>
+            <if test="dialogueMyselfId != null">
+                DIALOGUE_MYSELF_ID,
+            </if>
+            <if test="lastMessageId != null">
+                LAST_MESSAGE_ID,
+            </if>
+            <if test="lastReadMessageContent != null">
+                LAST_READ_MESSAGE_CONTENT,
+            </if>
+            <if test="lastReadMessageId != null">
+                LAST_READ_MESSAGE_ID,
+            </if>
+            <if test="unreadMessageCount != null">
+                UNREAD_MESSAGE_COUNT,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="dialogueId != null">
+                #{dialogueId,jdbcType=BIGINT},
+            </if>
+            <if test="dialogueFriendId != null">
+                #{dialogueFriendId,jdbcType=BIGINT},
+            </if>
+            <if test="dialogueMyselfId != null">
+                #{dialogueMyselfId,jdbcType=BIGINT},
+            </if>
+            <if test="lastMessageId != null">
+                #{lastMessageId,jdbcType=BIGINT},
+            </if>
+            <if test="lastReadMessageContent != null">
+                #{lastReadMessageContent,jdbcType=VARCHAR},
+            </if>
+            <if test="lastReadMessageId != null">
+                #{lastReadMessageId,jdbcType=BIGINT},
+            </if>
+            <if test="unreadMessageCount != null">
+                #{unreadMessageCount,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.dj.chat.main.bean.BaseDialogue">
+        update base_dialogue
+        <set>
+            <if test="dialogueFriendId != null">
+                DIALOGUE_FRIEND_ID = #{dialogueFriendId,jdbcType=BIGINT},
+            </if>
+            <if test="dialogueMyselfId != null">
+                DIALOGUE_MYSELF_ID = #{dialogueMyselfId,jdbcType=BIGINT},
+            </if>
+            <if test="lastMessageId != null">
+                LAST_MESSAGE_ID = #{lastMessageId,jdbcType=BIGINT},
+            </if>
+            <if test="lastReadMessageContent != null">
+                LAST_READ_MESSAGE_CONTENT = #{lastReadMessageContent,jdbcType=VARCHAR},
+            </if>
+            <if test="lastReadMessageId != null">
+                LAST_READ_MESSAGE_ID = #{lastReadMessageId,jdbcType=BIGINT},
+            </if>
+            <if test="unreadMessageCount != null">
+                UNREAD_MESSAGE_COUNT = #{unreadMessageCount,jdbcType=INTEGER},
+            </if>
+        </set>
+        where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.dj.chat.main.bean.BaseDialogue">
+        update base_dialogue
+        set DIALOGUE_FRIEND_ID = #{dialogueFriendId,jdbcType=BIGINT},
+        DIALOGUE_MYSELF_ID = #{dialogueMyselfId,jdbcType=BIGINT},
+        LAST_MESSAGE_ID = #{lastMessageId,jdbcType=BIGINT},
+        LAST_READ_MESSAGE_CONTENT = #{lastReadMessageContent,jdbcType=VARCHAR},
+        LAST_READ_MESSAGE_ID = #{lastReadMessageId,jdbcType=BIGINT},
+        UNREAD_MESSAGE_COUNT = #{unreadMessageCount,jdbcType=INTEGER}
+        where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}
+    </update>
+</mapper>

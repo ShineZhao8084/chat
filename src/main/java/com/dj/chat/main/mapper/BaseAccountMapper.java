@@ -3,6 +3,8 @@ package com.dj.chat.main.mapper;
 import com.dj.chat.main.bean.BaseAccount;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 @Mapper
 public interface BaseAccountMapper {
 
@@ -21,4 +23,6 @@ public interface BaseAccountMapper {
     int updateByPrimaryKey(BaseAccount record);
 
     BaseAccount loadUserByUsername(String loginName);
+
+    List<BaseAccount> findAAccountByAccountNameOrEmail(String param);
 }
