@@ -8,4 +8,7 @@ public interface DialogueService {
 
     List<BaseDialogueWithFriendAndAccount> listAllMyDialogueByAccountId(Long accountId);
 
+    List<BaseDialogueWithFriendAndAccount> listMyDialogue(Long accountId, String param);
+
+
 }

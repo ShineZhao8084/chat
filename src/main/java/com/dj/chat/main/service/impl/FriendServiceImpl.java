@@ -19,4 +19,9 @@ public class FriendServiceImpl implements FriendService {
         return baseFriendMappper.listAllMyFriends(accountId);
     }
 
+    @Override
+    public List<BaseFriendWithAccount> listMyFriend(Long accountId, String param) {
+        return baseFriendMappper.listMyFriend(accountId, param);
+    }
+
 }

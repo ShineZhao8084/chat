@@ -28,4 +28,13 @@ public class DialogueController {
         return JSON.toJSONString(ajaxResponseBody);
     }
 
+    @RequestMapping(path = "/dialogue/{accountId}/{param}", method = RequestMethod.GET)
+    public String listAllMyDialogue(@PathVariable Long accountId, @PathVariable String param) {
+        AjaxResponseBody ajaxResponseBody = new AjaxResponseBody();
+        List<BaseDialogueWithFriendAndAccount> baseDialogues = dialogueService.listMyDialogue(accountId, param);
+        ajaxResponseBody.setStatus("200");
+        ajaxResponseBody.setResult(baseDialogues);
+        return JSON.toJSONString(ajaxResponseBody);
+    }
+
 }

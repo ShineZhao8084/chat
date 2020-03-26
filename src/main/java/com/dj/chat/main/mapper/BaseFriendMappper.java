@@ -3,6 +3,7 @@ package com.dj.chat.main.mapper;
 import com.dj.chat.main.bean.BaseFriend;
 import com.dj.chat.main.bean.BaseFriendWithAccount;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -23,4 +24,5 @@ public interface BaseFriendMappper {
 
     List<BaseFriendWithAccount> listAllMyFriends(Long accountId);
 
+    List<BaseFriendWithAccount> listMyFriend(@Param("accountId") Long accountId, @Param("param") String param);
 }

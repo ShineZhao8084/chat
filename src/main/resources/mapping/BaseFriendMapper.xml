@@ -53,6 +53,29 @@
         where FRIEND_MYSELF_ID = #{accountId, jdbcType=BIGINT}
     </select>
 
+    <select id="listMyFriend" resultMap="BaseResultMapWithAccount">
+        SELECT * FROM (
+            SELECT
+                f.FRIEND_ID,
+                f.FRIEND_ACCOUNT_ID,
+                f.FRIEND_MYSELF_ID,
+                f.FRIEND_NAME,
+                a.ACCOUNT_ID,
+                a.USER_NAME,
+                a.LOGIN_NAME,
+                a.BIRTHDAY,
+                a.PHONE,
+                a.EMAIL,
+                a.PROFILE_PHOTO
+            FROM
+                base_friend f
+            LEFT JOIN base_account a ON f.FRIEND_ACCOUNT_ID = a.ACCOUNT_ID
+            where FRIEND_MYSELF_ID = #{accountId, jdbcType=BIGINT}
+        ) e
+        WHERE e.LOGIN_NAME LIKE CONCAT('%', #{param, jdbcType=VARCHAR}, '%')
+        OR e.FRIEND_NAME  LIKE CONCAT('%', #{param, jdbcType=VARCHAR}, '%')
+    </select>
+
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from base_friend
         where FRIEND_ID = #{friendId,jdbcType=BIGINT}

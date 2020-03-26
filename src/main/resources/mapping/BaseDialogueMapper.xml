@@ -57,6 +57,21 @@
         where DIALOGUE_MYSELF_ID = #{accountId, jdbcType=BIGINT}
     </select>
 
+    <select id="listMyDialogue" resultMap="BaseResultMapWithFriendAndAccount">
+        select * from (
+            select
+                d.DIALOGUE_ID, d.DIALOGUE_FRIEND_ID, d.DIALOGUE_MYSELF_ID, d.LAST_MESSAGE_ID, d.LAST_READ_MESSAGE_CONTENT, d.LAST_READ_MESSAGE_ID,
+                a.ACCOUNT_ID, a.USER_NAME, a.LOGIN_NAME, a.BIRTHDAY, a.PHONE, a.EMAIL, a.PROFILE_PHOTO,
+                f.FRIEND_ID, f.FRIEND_ACCOUNT_ID, f.FRIEND_MYSELF_ID, f.FRIEND_NAME
+            from base_dialogue d
+            left join base_account a on d.DIALOGUE_FRIEND_ID = a.ACCOUNT_ID
+            left join base_friend f on d.DIALOGUE_FRIEND_ID = f.FRIEND_ACCOUNT_ID
+            where DIALOGUE_MYSELF_ID = #{accountId, jdbcType=BIGINT}
+        ) s
+        where s.LOGIN_NAME like concat('%', #{param, jdbcType=VARCHAR}, '%')
+        or s.FRIEND_NAME like concat('%', #{param, jdbcType=VARCHAR}, '%')
+    </select>
+
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from base_dialogue
         where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}

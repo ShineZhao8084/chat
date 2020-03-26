@@ -7,4 +7,6 @@ import java.util.List;
 public interface FriendService {
 
     List<BaseFriendWithAccount> listAllMyFriends(Long accountId);
+
+    List<BaseFriendWithAccount> listMyFriend(Long accountId, String param);
 }

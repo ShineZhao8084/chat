@@ -20,4 +20,9 @@ public class DialogueServiceImpl implements DialogueService {
         return baseDialogueMapper.listAllMyDialogueByAccountId(accountId);
     }
 
+    @Override
+    public List<BaseDialogueWithFriendAndAccount> listMyDialogue(Long accountId, String param) {
+        return baseDialogueMapper.listMyDialogue(accountId, param);
+    }
+
 }

@@ -18,10 +18,19 @@ public class FriendController {
     @Resource
     private FriendService friendService;
 
-    @RequestMapping(path = "/friend/{accountId}", method = RequestMethod.POST)
+    @RequestMapping(path = "/friend/{accountId}", method = RequestMethod.GET)
     public String listAllMyFriends(@PathVariable Long accountId) {
         AjaxResponseBody ajaxResponseBody = new AjaxResponseBody();
         List<BaseFriendWithAccount> friendList = friendService.listAllMyFriends(accountId);
+        ajaxResponseBody.setStatus("200");
+        ajaxResponseBody.setResult(friendList);
+        return JSON.toJSONString(ajaxResponseBody);
+    }
+
+    @RequestMapping(path = "/friend/{accountId}/{param}", method = RequestMethod.GET)
+    public String listMyFriend(@PathVariable Long accountId, @PathVariable String param) {
+        AjaxResponseBody ajaxResponseBody = new AjaxResponseBody();
+        List<BaseFriendWithAccount> friendList = friendService.listMyFriend(accountId, param);
         ajaxResponseBody.setStatus("200");
         ajaxResponseBody.setResult(friendList);
         return JSON.toJSONString(ajaxResponseBody);
