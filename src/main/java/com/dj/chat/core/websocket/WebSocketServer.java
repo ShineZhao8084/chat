@@ -2,6 +2,7 @@ package com.dj.chat.core.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.dj.chat.main.bean.BaseMessage;
 import com.dj.chat.main.service.MessageService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -13,6 +14,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ServerEndpoint("/imserver/{accountId}")
@@ -24,7 +26,7 @@ public class WebSocketServer {
     //concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
     private static ConcurrentHashMap<String, WebSocketServer> webSocketMap = new ConcurrentHashMap<>();
     private Session session;  //与某个客户端的连接会话，需要通过它来给客户端发送数据
-    private String accountId;  //accountId
+    private Long accountId;  //accountId
     @Resource
     private MessageService messageService;
 
@@ -32,7 +34,7 @@ public class WebSocketServer {
      * 连接建立成功调用的方法
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("accountId") String accountId) {
+    public void onOpen(Session session, @PathParam("accountId") Long accountId) {
         this.session = session;
         this.accountId = accountId;
         if (webSocketMap.containsKey(accountId)) {
@@ -40,7 +42,7 @@ public class WebSocketServer {
         } else {
             addOnlineCount();
         }
-        webSocketMap.put(accountId, this);
+        webSocketMap.put(accountId.toString(), this);
         log.info("用户连接:" + accountId + ",当前在线人数为:" + getOnlineCount());
     }
 
@@ -49,8 +51,8 @@ public class WebSocketServer {
      */
     @OnClose
     public void onClose() {
-        if (webSocketMap.containsKey(accountId)) {
-            webSocketMap.remove(accountId);
+        if (webSocketMap.containsKey(accountId.toString())) {
+            webSocketMap.remove(accountId.toString());
             //从set中删除
             subOnlineCount();
         }
@@ -73,15 +75,18 @@ public class WebSocketServer {
                 //追加发送人(防止串改)
                 jsonObject.put("fromAccountId", this.accountId);
                 String toAccountId = jsonObject.getString("toAccountId");
+                String contentText = jsonObject.getString("contentText");
                 //传送给对应toAccountId用户的websocket
 
                 if (StringUtils.isNotBlank(toAccountId) && webSocketMap.containsKey(toAccountId)) {
+                    jsonObject.put("messageType", "100");  //在线已发送
                     webSocketMap.get(toAccountId).sendMessage(jsonObject.toJSONString());
-
                 } else {
+                    jsonObject.put("messageType", "100");  //不在线在线已发送
                     log.error("请求的accountId:" + toAccountId + "不在该服务器上");
                     //否则不在这个服务器上，发送到mysql或者redis
                 }
+                messageService.onMessage(jsonObject);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -108,10 +113,10 @@ public class WebSocketServer {
     /**
      * 发送自定义消息
      */
-    public static void sendInfo(String message, @PathParam("accountId") String accountId) throws IOException {
+    public static void sendInfo(String message, @PathParam("accountId") Long accountId) throws IOException {
         log.info("发送消息到:" + accountId + "，报文:" + message);
-        if (StringUtils.isNotBlank(accountId) && webSocketMap.containsKey(accountId)) {
-            webSocketMap.get(accountId).sendMessage(message);
+        if (StringUtils.isNotBlank(accountId.toString()) && webSocketMap.containsKey(accountId.toString())) {
+            webSocketMap.get(accountId.toString()).sendMessage(message);
         } else {
             log.error("用户" + accountId + ", 不在线！");
         }

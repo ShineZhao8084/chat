@@ -229,7 +229,7 @@
 	                </div>
 
 	                <div class="chat-list-content">
-	                	<ul class="chat-list" id="dialogueList"></ul>
+	                	<ul class="chat-list chat-begin" id="dialogueList"></ul>
 	                </div>
 				</div>
 				<div class="sidebar" id="friends">
@@ -665,7 +665,7 @@
 
 			</div>
 
-			<div class="chat-content">
+			<div class="chat-content" style="display: none">
 				<!-- chat header -->
 				<div class="chat-header">
 	                <div class="chat-header-user">
@@ -696,7 +696,7 @@
 	            </div>
 				<!-- chat header -->
 				<!-- chat body -->
-				<div class="chat-body" style="overflow: hidden;outline: none;">
+				<div class="chat-body" style="overflow: hidden;outline: none">
 					<div class="messages-content">
 						<div class="message-item">
 	                        <div class="message-user">
@@ -786,7 +786,8 @@
 				<!-- chat body -->
 				<!-- chat footer -->
 				<div class="chat-footer">
-					<input type="text" id="toUserId" placeholder="邮箱"/>
+					<input type="text" id="toUserId"style="display: none"/>
+					<input type="text" id="currentDialogueId"style="display: none"/>
 					<form action="#" >
 						<input id="contentText" type="text" placeholder="">
 						<button id="sendMessage"><img src="/images/send.png" alt="send"></button>

@@ -1,8 +1,11 @@
-var dialogueListData = {};
-var friendListData = {};
-
+let dialogueListData = {};
+let friendListData = {};
+let messagesContent = $(".messages-content");
+let chatBody = $(".chat-body");
+let chatContent = $(".chat-content");
 $(function () {
     $("#accountList").niceScroll();
+    scrollToBottom();
     openSocket();
     listAllMyDialogue();
     listAllMyFriend();
@@ -62,8 +65,9 @@ function listAllMyFriend() {
 function generateDialogueListView() {
     var finalHtml = "";
     for (var i in dialogueListData) {
-        var html = "<li class=\"chat-list-item\" style=\"cursor: default\">";
+        var html = "<li class=\"chat-list-item chat-begin-item active\">";
         html += "       <figure class=\"avatar user-online\"><img src=\"/images/user-2.png\" alt=\"image\"></figure>" +
+            "           <input class=\"accountId\" value=\"" + dialogueListData[i].dialogueFriendId + "\" style=\"display: none\"/>" +
             "           <div class=\"list-body\">" +
             "               <div class=\"chat-bttn\"><h3 class=\"mb-0 mt-2\">" + dialogueListData[i].baseFriend.friendName + "</h3><p>What's up, how are you?</p></div>" +
             "               <div class=\"list-action mt-2 text-right\"><div class=\"message-count bg-primary\">3</div><small class=\"text-primary\">03:41 PM</small></div>" +
@@ -77,8 +81,8 @@ function generateDialogueListView() {
 function generateFriendListView() {
     var finalHtml = "";
     for (var i in friendListData) {
-        var html =  "<li class=\"chat-list-item\" style=\"cursor: default\">";
-        html +=     "   <figure class=\"avatar user-online\"><img src=\"/images/user-2.png\" alt=\"image\"></figure>" +
+        var html = "<li class=\"chat-list-item\" style=\"cursor: default\">";
+        html += "   <figure class=\"avatar user-online\"><img src=\"/images/user-2.png\" alt=\"image\"></figure>" +
             "   <div class=\"list-body\">" +
             "       <div class=\"chat-bttn\"><h3 class=\"mb-1 mt-1\">" + friendListData[i].friendName + "</h3><p>" + friendListData[i].baseAccount.email + "</p></div>" +
             "       <div class=\"list-action text-right\">" +
@@ -98,6 +102,7 @@ function generateFriendListView() {
 }
 
 var socket;
+
 function openSocket() {
     if (typeof (WebSocket) == "undefined") {
         console.log("您的浏览器不支持WebSocket");
@@ -106,7 +111,7 @@ function openSocket() {
         //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
         //等同于socket = new WebSocket("ws://localhost:8888/xxxx/im/25");
         //var socketUrl="${request.contextPath}/im/"+$("#userId").val();
-        var socketUrl = "ws://10.73.240.25/imserver/" + $("#accountId").val();
+        var socketUrl = "ws://127.0.0.1/imserver/" + $("#accountId").val();
         //socketUrl = socketUrl.replace("https", "ws").replace("http", "ws");
         console.log(socketUrl);
         if (socket != null) {
@@ -121,9 +126,30 @@ function openSocket() {
         };
         //获得消息事件
         socket.onmessage = function (msg) {
-            console.log(msg.data);
+            let response = JSON.parse(msg.data);
             //发现消息进入    开始处理前端触发逻辑
-            showMessage(msg.data)
+            console.log(response.messageType);
+            if ("100" === response.messageType) {  //100 接受来自其他用户的信息
+                let html = "<div class=\"message-item\">";
+                let flag = messagesContent.children(".message-item:last-child").hasClass("outgoing-message");
+                if (flag) {
+                    html += "<div class=\"message-user\">";
+                    html += "   <figure class=\"avatar\">";
+                    html += "       <img src=\"/images/user-9.png\" alt=\"image\">";
+                    html += "   </figure>";
+                    html += "   <div>";
+                    html += "       <h5>Byrom Guittet</h5>";
+                    html += "       <div class=\"time\">01:35 PM</div>";
+                    html += "   </div>";
+                    html += "</div>";
+                }
+                html += "<div class=\"message-wrap\">" + response.contentText + "</div>";
+                html += "</div>";
+                console.log("1: " + messagesContent.height());
+                messagesContent.append(html);
+                scrollToBottom();
+            }
+
         };
         //关闭事件
         socket.onclose = function () {
@@ -148,6 +174,13 @@ function showMessage(msg) {
         icon: 'info'
     })
 }
+
+$(".chat-begin").on("click", ".chat-begin-item", function () {
+    console.log("234");
+    $("#toUserId").val($(this).find(".accountId").val())
+    chatContent.show();
+    scrollToBottom();
+});
 
 $("#searchForDialogue").click(function (e) {
     e.preventDefault();
@@ -227,11 +260,34 @@ $("#logout").click(function () {
 
 $("#sendMessage").click(function (e) {
     e.preventDefault();
+    let message = $("#contentText").val();
+    let scrollHeight = 0;
     if (typeof (WebSocket) == "undefined") {
         console.log("您的浏览器不支持WebSocket");
     } else {
-        console.log("您的浏览器支持WebSocket");
-        console.log('{"toUserId":"' + $("#toUserId").val() + '","contentText":"' + $("#contentText").val() + '"}');
-        socket.send('{"toUserId":"' + $("#toUserId").val() + '","contentText":"' + $("#contentText").val() + '"}');
+        let html = "<div class=\"message-item outgoing-message\">";
+        let flag = messagesContent.children(".message-item:last-child").hasClass("outgoing-message");
+        if (!flag) {
+            html += "<div class=\"message-user\">" +
+                "<figure class=\"avatar\">" +
+                "<img src=\"/images/user-9.png\" alt=\"image\">" +
+                "</figure>" +
+                "<div>" +
+                "<h5>Byrom Guittet</h5>" +
+                "<div class=\"time\">01:35 PM</div>" +
+                "</div></div>";
+        }
+        html += "<div class=\"message-wrap\">" + message + "</div>";
+        html += "</div>";
+        console.log("1: " + messagesContent.height());
+        messagesContent.append(html);
+        scrollToBottom();
+        socket.send('{"toAccountId":"' + $("#toUserId").val() + '","contentText":"' + message + '"}');
     }
 });
+
+function scrollToBottom() {
+
+    chatBody.getNiceScroll().resize();
+    chatBody.getNiceScroll(0).doScrollTop(messagesContent.height());
+}

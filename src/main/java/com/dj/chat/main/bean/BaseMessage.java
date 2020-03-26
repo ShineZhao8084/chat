@@ -4,11 +4,13 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * base_message
  * @author 
+ * 
  */
 public class BaseMessage implements Serializable {
     private Long baseMessageId;
+
+    private Long baseMessageBelong;
 
     private String baseMessageContent;
 
@@ -33,6 +35,14 @@ public class BaseMessage implements Serializable {
 
     public void setBaseMessageId(Long baseMessageId) {
         this.baseMessageId = baseMessageId;
+    }
+
+    public Long getBaseMessageBelong() {
+        return baseMessageBelong;
+    }
+
+    public void setBaseMessageBelong(Long baseMessageBelong) {
+        this.baseMessageBelong = baseMessageBelong;
     }
 
     public String getBaseMessageContent() {
@@ -81,58 +91,5 @@ public class BaseMessage implements Serializable {
 
     public void setBaseMessageTo(Long baseMessageTo) {
         this.baseMessageTo = baseMessageTo;
-    }
-
-    @Override
-    public boolean equals(Object that) {
-        if (this == that) {
-            return true;
-        }
-        if (that == null) {
-            return false;
-        }
-        if (getClass() != that.getClass()) {
-            return false;
-        }
-        BaseMessage other = (BaseMessage) that;
-        return (this.getBaseMessageId() == null ? other.getBaseMessageId() == null : this.getBaseMessageId().equals(other.getBaseMessageId()))
-            && (this.getBaseMessageContent() == null ? other.getBaseMessageContent() == null : this.getBaseMessageContent().equals(other.getBaseMessageContent()))
-            && (this.getBaseMessageStatus() == null ? other.getBaseMessageStatus() == null : this.getBaseMessageStatus().equals(other.getBaseMessageStatus()))
-            && (this.getBaseMessageTypeId() == null ? other.getBaseMessageTypeId() == null : this.getBaseMessageTypeId().equals(other.getBaseMessageTypeId()))
-            && (this.getBaseMessageSendTime() == null ? other.getBaseMessageSendTime() == null : this.getBaseMessageSendTime().equals(other.getBaseMessageSendTime()))
-            && (this.getBaseMessageFrom() == null ? other.getBaseMessageFrom() == null : this.getBaseMessageFrom().equals(other.getBaseMessageFrom()))
-            && (this.getBaseMessageTo() == null ? other.getBaseMessageTo() == null : this.getBaseMessageTo().equals(other.getBaseMessageTo()));
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((getBaseMessageId() == null) ? 0 : getBaseMessageId().hashCode());
-        result = prime * result + ((getBaseMessageContent() == null) ? 0 : getBaseMessageContent().hashCode());
-        result = prime * result + ((getBaseMessageStatus() == null) ? 0 : getBaseMessageStatus().hashCode());
-        result = prime * result + ((getBaseMessageTypeId() == null) ? 0 : getBaseMessageTypeId().hashCode());
-        result = prime * result + ((getBaseMessageSendTime() == null) ? 0 : getBaseMessageSendTime().hashCode());
-        result = prime * result + ((getBaseMessageFrom() == null) ? 0 : getBaseMessageFrom().hashCode());
-        result = prime * result + ((getBaseMessageTo() == null) ? 0 : getBaseMessageTo().hashCode());
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getSimpleName());
-        sb.append(" [");
-        sb.append("Hash = ").append(hashCode());
-        sb.append(", baseMessageId=").append(baseMessageId);
-        sb.append(", baseMessageContent=").append(baseMessageContent);
-        sb.append(", baseMessageStatus=").append(baseMessageStatus);
-        sb.append(", baseMessageTypeId=").append(baseMessageTypeId);
-        sb.append(", baseMessageSendTime=").append(baseMessageSendTime);
-        sb.append(", baseMessageFrom=").append(baseMessageFrom);
-        sb.append(", baseMessageTo=").append(baseMessageTo);
-        sb.append(", serialVersionUID=").append(serialVersionUID);
-        sb.append("]");
-        return sb.toString();
     }
 }

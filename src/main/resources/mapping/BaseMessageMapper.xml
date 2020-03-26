@@ -3,6 +3,7 @@
 <mapper namespace="com.dj.chat.main.mapper.BaseMessageMapper">
   <resultMap id="BaseResultMap" type="com.dj.chat.main.bean.BaseMessage">
     <id column="BASE_MESSAGE_ID" jdbcType="BIGINT" property="baseMessageId" />
+    <result column="BASE_MESSAGE_BELONG" jdbcType="BIGINT" property="baseMessageBelong" />
     <result column="BASE_MESSAGE_CONTENT" jdbcType="VARCHAR" property="baseMessageContent" />
     <result column="BASE_MESSAGE_STATUS" jdbcType="INTEGER" property="baseMessageStatus" />
     <result column="BASE_MESSAGE_TYPE_ID" jdbcType="INTEGER" property="baseMessageTypeId" />
@@ -11,8 +12,8 @@
     <result column="BASE_MESSAGE_TO" jdbcType="BIGINT" property="baseMessageTo" />
   </resultMap>
   <sql id="Base_Column_List">
-    BASE_MESSAGE_ID, BASE_MESSAGE_CONTENT, BASE_MESSAGE_STATUS, BASE_MESSAGE_TYPE_ID, 
-    BASE_MESSAGE_SEND_TIME, BASE_MESSAGE_FROM, BASE_MESSAGE_TO
+    BASE_MESSAGE_ID, BASE_MESSAGE_BELONG, BASE_MESSAGE_CONTENT, BASE_MESSAGE_STATUS, 
+    BASE_MESSAGE_TYPE_ID, BASE_MESSAGE_SEND_TIME, BASE_MESSAGE_FROM, BASE_MESSAGE_TO
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
@@ -25,10 +26,10 @@
     where BASE_MESSAGE_ID = #{baseMessageId,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="com.dj.chat.main.bean.BaseMessage">
-    insert into base_message (BASE_MESSAGE_ID, BASE_MESSAGE_CONTENT, 
+    insert into base_message (BASE_MESSAGE_ID, BASE_MESSAGE_BELONG, BASE_MESSAGE_CONTENT, 
       BASE_MESSAGE_STATUS, BASE_MESSAGE_TYPE_ID, BASE_MESSAGE_SEND_TIME, 
       BASE_MESSAGE_FROM, BASE_MESSAGE_TO)
-    values (#{baseMessageId,jdbcType=BIGINT}, #{baseMessageContent,jdbcType=VARCHAR}, 
+    values (#{baseMessageId,jdbcType=BIGINT}, #{baseMessageBelong,jdbcType=BIGINT}, #{baseMessageContent,jdbcType=VARCHAR}, 
       #{baseMessageStatus,jdbcType=INTEGER}, #{baseMessageTypeId,jdbcType=INTEGER}, #{baseMessageSendTime,jdbcType=TIMESTAMP}, 
       #{baseMessageFrom,jdbcType=BIGINT}, #{baseMessageTo,jdbcType=BIGINT})
   </insert>
@@ -37,6 +38,9 @@
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="baseMessageId != null">
         BASE_MESSAGE_ID,
+      </if>
+      <if test="baseMessageBelong != null">
+        BASE_MESSAGE_BELONG,
       </if>
       <if test="baseMessageContent != null">
         BASE_MESSAGE_CONTENT,
@@ -61,6 +65,9 @@
       <if test="baseMessageId != null">
         #{baseMessageId,jdbcType=BIGINT},
       </if>
+      <if test="baseMessageBelong != null">
+        #{baseMessageBelong,jdbcType=BIGINT},
+      </if>
       <if test="baseMessageContent != null">
         #{baseMessageContent,jdbcType=VARCHAR},
       </if>
@@ -84,6 +91,9 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.dj.chat.main.bean.BaseMessage">
     update base_message
     <set>
+      <if test="baseMessageBelong != null">
+        BASE_MESSAGE_BELONG = #{baseMessageBelong,jdbcType=BIGINT},
+      </if>
       <if test="baseMessageContent != null">
         BASE_MESSAGE_CONTENT = #{baseMessageContent,jdbcType=VARCHAR},
       </if>
@@ -107,7 +117,8 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.dj.chat.main.bean.BaseMessage">
     update base_message
-    set BASE_MESSAGE_CONTENT = #{baseMessageContent,jdbcType=VARCHAR},
+    set BASE_MESSAGE_BELONG = #{baseMessageBelong,jdbcType=BIGINT},
+      BASE_MESSAGE_CONTENT = #{baseMessageContent,jdbcType=VARCHAR},
       BASE_MESSAGE_STATUS = #{baseMessageStatus,jdbcType=INTEGER},
       BASE_MESSAGE_TYPE_ID = #{baseMessageTypeId,jdbcType=INTEGER},
       BASE_MESSAGE_SEND_TIME = #{baseMessageSendTime,jdbcType=TIMESTAMP},

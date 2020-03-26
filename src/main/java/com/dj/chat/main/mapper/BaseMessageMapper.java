@@ -1,11 +1,8 @@
 package com.dj.chat.main.mapper;
 
 import com.dj.chat.main.bean.BaseMessage;
-import org.apache.ibatis.annotations.Mapper;
 
-@Mapper
 public interface BaseMessageMapper {
-
     int deleteByPrimaryKey(Long baseMessageId);
 
     int insert(BaseMessage record);
@@ -17,5 +14,4 @@ public interface BaseMessageMapper {
     int updateByPrimaryKeySelective(BaseMessage record);
 
     int updateByPrimaryKey(BaseMessage record);
-
 }
