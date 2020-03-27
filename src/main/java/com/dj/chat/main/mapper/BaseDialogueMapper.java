@@ -9,6 +9,7 @@ import java.util.List;
 
 @Mapper
 public interface BaseDialogueMapper {
+
     int deleteByPrimaryKey(Long dialogueId);
 
     int insert(BaseDialogue record);
@@ -24,4 +25,7 @@ public interface BaseDialogueMapper {
     List<BaseDialogueWithFriendAndAccount> listAllMyDialogueByAccountId(Long accountId);
 
     List<BaseDialogueWithFriendAndAccount> listMyDialogue(@Param("accountId") Long accountId, @Param("param") String param);
+
+
+
 }

@@ -1,6 +1,6 @@
 package com.dj.chat.main.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
+import com.dj.chat.core.websocket.bean.MessageReceive;
 import com.dj.chat.main.bean.BaseDialogue;
 import com.dj.chat.main.bean.BaseMessage;
 import com.dj.chat.main.mapper.BaseDialogueMapper;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -21,46 +22,39 @@ public class MessageServiceImpl implements MessageService {
     private BaseDialogueMapper baseDialogueMapper;
 
     @Override
-    public void onMessage(JSONObject jsonObject) {
-        Long fromAccountId = Long.valueOf(jsonObject.getString("fromAccountId"));
-        Long toAccountId = Long.valueOf(jsonObject.getString("toAccountId"));
-        String contentText = jsonObject.getString("contentText");
+    public Map<String, List<BaseDialogue>> onMessage(MessageReceive messageReceive) {
 
         Date now = new Date();
-        BaseMessage baseMessageMe = new BaseMessage();
-        baseMessageMe.setBaseMessageBelong(fromAccountId);
-        baseMessageMe.setBaseMessageFrom(fromAccountId);
-        baseMessageMe.setBaseMessageTo(toAccountId);
-        baseMessageMe.setBaseMessageSendTime(now);
-        baseMessageMe.setBaseMessageContent(contentText);
-        baseMessageMapper.insert(baseMessageMe);
 
-        BaseMessage baseMessageTo = new BaseMessage();
-        baseMessageTo.setBaseMessageBelong(toAccountId);
-        baseMessageTo.setBaseMessageFrom(fromAccountId);
-        baseMessageTo.setBaseMessageTo(toAccountId);
-        baseMessageTo.setBaseMessageSendTime(now);
-        baseMessageTo.setBaseMessageContent(contentText);
-        baseMessageMapper.insert(baseMessageTo);
+        //消息入库
+        BaseMessage baseMessageSender = new BaseMessage();  //发送者消息保存
+        baseMessageSender.setBaseMessageBelong(messageReceive.getFromAccountId());
+        baseMessageSender.setBaseMessageFrom(messageReceive.getFromAccountId());
+        baseMessageSender.setBaseMessageTo(messageReceive.getToAccountId());
+        baseMessageSender.setBaseMessageTypeId(1);
+        baseMessageSender.setBaseMessageContent(messageReceive.getContentText());
+        baseMessageSender.setBaseMessageSendTime(now);
 
-        //更新我的会话状态，会话表修改count字段为最后消息来源字段，添加会话创建时间和更新时间用作前端排序字段，添加置顶字段和置顶时间字段
-        BaseDialogue baseDialogue = new BaseDialogue();
-        //List<BaseDialogue> dialogueList = baseDialogueMapper.selectABaseDialogue();
+        BaseMessage baseMessageReceive = new BaseMessage();  //接收者消息保存
+        baseMessageReceive.setBaseMessageBelong(messageReceive.getToAccountId());
+        baseMessageReceive.setBaseMessageFrom(messageReceive.getFromAccountId());
+        baseMessageReceive.setBaseMessageTo(messageReceive.getToAccountId());
+        baseMessageReceive.setBaseMessageTypeId(1);
+        baseMessageReceive.setBaseMessageContent(messageReceive.getContentText());
+        baseMessageReceive.setBaseMessageSendTime(now);
 
-        //对方会话，不存在则创建，根据对方在线状态决定是否发送对方的接收报文
+        baseMessageMapper.insert(baseMessageSender);
+        baseMessageMapper.insert(baseMessageReceive);
 
-        //发送接收消息时，重新渲染会话视图（重新顺序） 重新设计websocket交互报文
+        //更新发送人会话、接收人会话
+        BaseDialogue baseDialogueSender = new BaseDialogue();
+        baseDialogueSender.getDialogueFriendId();
 
-        //（我方发送）发送报文：来源，去向，消息类型，消息内容
-        //（处理事件）更新我的会话，对方会话
+        BaseDialogue baseDialogueReceive = new BaseDialogue();
 
-        //（我方接收）发送回执报文：已发送信息体，我的会话列表
+        
+        baseDialogueMapper.updateByPrimaryKeySelective(baseDialogueSender);
 
-        //（对方接收）接收报文：待接收信息体，对方会话列表
-
-        //（对方发送）接收回执报文：接收信息体，已读消息类型（201：在线且当前窗口显示 201：在线不在当前窗口）
-        //（处理事件）更新对方会话，我的会话
-
-        //前端会话列表点击事件：更新我的会话，对方会话，返回消息列表
+        return null;
     }
 }

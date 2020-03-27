@@ -4,7 +4,6 @@ let messagesContent = $(".messages-content");
 let chatBody = $(".chat-body");
 let chatContent = $(".chat-content");
 $(function () {
-    $("#accountList").niceScroll();
     scrollToBottom();
     openSocket();
     listAllMyDialogue();
@@ -45,10 +44,9 @@ function listAllMyFriend() {
             var msg = result.msg;
             if ("200" === result.status) {
                 friendListData = result.result;
+                console.log(friendListData)
                 generateFriendListView();
             } else {
-                console.log(result)
-
                 $.toast({
                     position: 'top-right',
                     stack: 10,
@@ -79,24 +77,30 @@ function generateDialogueListView() {
 }
 
 function generateFriendListView() {
-    var finalHtml = "";
-    for (var i in friendListData) {
-        var html = "<li class=\"chat-list-item\" style=\"cursor: default\">";
-        html += "   <figure class=\"avatar user-online\"><img src=\"/images/user-2.png\" alt=\"image\"></figure>" +
-            "   <div class=\"list-body\">" +
-            "       <div class=\"chat-bttn\"><h3 class=\"mb-1 mt-1\">" + friendListData[i].friendName + "</h3><p>" + friendListData[i].baseAccount.email + "</p></div>" +
-            "       <div class=\"list-action text-right\">" +
-            "           <a href=\"#\" class=\"btn-plus dropdown-toggle\" data-toggle=\"dropdown\"><i class=\"ti-menu\"></i></a>" +
-            "           <div class=\"dropdown-menu dropdown-menu-right\">" +
-            "           <a href=\"#\" class=\"dropdown-item\" id=\"addfriend-bttn\">发起会话</a>" +
-            "           <a href=\"#\" class=\"dropdown-item\" id=\"addfriend-bttn\">查看资料</a>" +
-            "           <a href=\"#\" class=\"dropdown-item\">修改备注</a>" +
-            "           <div class=\"dropdown-divider\"></div>" +
-            "           <a href=\"#\" class=\"dropdown-item text-danger\">删除好友</a>" +
-            "       </div>" +
-            "   </div>" +
-            "</li>";
+    let finalHtml = "";
+    let avatarHome = $("#avatarHome");
+    avatarHome.html("");
+    for (const i in friendListData) {
+        let html = "";
+        let avatarHtml = "<figure class=\"avatar user-online\"><img src=\"/images/user-2.png\" alt=\"image\"></figure>";
+        html += "<li class=\"chat-list-item\" style=\"cursor: default\">";
+        html += avatarHtml;
+        html += "   <div class=\"list-body\">";
+        html += "       <div class=\"chat-bttn\"><h3 class=\"mb-1 mt-1\">" + friendListData[i].friendName + "</h3><p>" + friendListData[i].baseAccount.email + "</p></div>";
+        html += "       <div class=\"list-action text-right\">";
+        html += "           <a href=\"#\" class=\"btn-plus dropdown-toggle\" data-toggle=\"dropdown\"><i class=\"ti-menu\"></i></a>";
+        html += "           <div class=\"dropdown-menu dropdown-menu-right\">";
+        html += "           <a href=\"#\" class=\"dropdown-item\" id=\"addfriend-bttn\">发起会话</a>";
+        html += "           <a href=\"#\" class=\"dropdown-item\" id=\"addfriend-bttn\">查看资料</a>";
+        html += "           <a href=\"#\" class=\"dropdown-item\">修改备注</a>";
+        html += "           <div class=\"dropdown-divider\"></div>";
+        html += "           <a href=\"#\" class=\"dropdown-item text-danger\">删除好友</a>";
+        html += "       </div>";
+        html += "   </div>";
+        html += "</li>";
         finalHtml += html;
+        let avatarHtmlWrapper = "<div id=\"avatar" + friendListData[i].friendAccountId + "\">" + avatarHtml + "</div>";
+        avatarHome.append(avatarHtmlWrapper);
     }
     $("#friendsList").html(finalHtml);
 }
@@ -111,7 +115,7 @@ function openSocket() {
         //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
         //等同于socket = new WebSocket("ws://localhost:8888/xxxx/im/25");
         //var socketUrl="${request.contextPath}/im/"+$("#userId").val();
-        var socketUrl = "ws://127.0.0.1/imserver/" + $("#accountId").val();
+        var socketUrl = "ws://10.73.240.25/imserver/" + $("#accountId").val();
         //socketUrl = socketUrl.replace("https", "ws").replace("http", "ws");
         console.log(socketUrl);
         if (socket != null) {
@@ -129,7 +133,9 @@ function openSocket() {
             let response = JSON.parse(msg.data);
             //发现消息进入    开始处理前端触发逻辑
             console.log(response.messageType);
-            if ("100" === response.messageType) {  //100 接受来自其他用户的信息
+            if ("801" === response.messageType) {   //801 发送消息的回执
+                console.log("已发送");
+            } else if ("802" === response.messageType) {   //802 接受来自其他用户的信息
                 let html = "<div class=\"message-item\">";
                 let flag = messagesContent.children(".message-item:last-child").hasClass("outgoing-message");
                 if (flag) {
@@ -261,6 +267,7 @@ $("#logout").click(function () {
 $("#sendMessage").click(function (e) {
     e.preventDefault();
     let message = $("#contentText").val();
+    message = message.replace(/[\n\r\t]/g, "");
     let scrollHeight = 0;
     if (typeof (WebSocket) == "undefined") {
         console.log("您的浏览器不支持WebSocket");
@@ -279,10 +286,21 @@ $("#sendMessage").click(function (e) {
         }
         html += "<div class=\"message-wrap\">" + message + "</div>";
         html += "</div>";
-        console.log("1: " + messagesContent.height());
         messagesContent.append(html);
         scrollToBottom();
-        socket.send('{"toAccountId":"' + $("#toUserId").val() + '","contentText":"' + message + '"}');
+
+        let object = {
+            "fromAccountId": $("#accountId").val(),
+            "toAccountId": $("#toUserId").val(),
+            "contentType": "text",
+            "contentText": message
+        };
+        let dataWrapper = {
+            "messageType": "800",
+            "object": object
+        };
+        socket.send(JSON.stringify(dataWrapper));
+        $("#contentText").val("");
     }
 });
 

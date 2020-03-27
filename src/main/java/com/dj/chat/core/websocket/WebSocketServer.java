@@ -2,6 +2,10 @@ package com.dj.chat.core.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.dj.chat.core.websocket.bean.MessageReceive;
+import com.dj.chat.core.websocket.bean.MessageReceiveResponse;
+import com.dj.chat.core.websocket.bean.MessageSend;
+import com.dj.chat.main.bean.BaseDialogue;
 import com.dj.chat.main.bean.BaseMessage;
 import com.dj.chat.main.service.MessageService;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +19,9 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ServerEndpoint("/imserver/{accountId}")
@@ -37,8 +44,8 @@ public class WebSocketServer {
     public void onOpen(Session session, @PathParam("accountId") Long accountId) {
         this.session = session;
         this.accountId = accountId;
-        if (webSocketMap.containsKey(accountId)) {
-            webSocketMap.remove(accountId);
+        if (webSocketMap.containsKey(accountId.toString())) {
+            webSocketMap.remove(accountId.toString());
         } else {
             addOnlineCount();
         }
@@ -72,21 +79,45 @@ public class WebSocketServer {
             try {
                 //解析发送的报文
                 JSONObject jsonObject = JSON.parseObject(message);
-                //追加发送人(防止串改)
-                jsonObject.put("fromAccountId", this.accountId);
-                String toAccountId = jsonObject.getString("toAccountId");
-                String contentText = jsonObject.getString("contentText");
-                //传送给对应toAccountId用户的websocket
+                String messageType = jsonObject.getString("messageType");
+                JSONObject innerObject = jsonObject.getJSONObject("object");
+                if ("800".equals(messageType)) {  //服务端接收发送消息消息体
+                    MessageReceive messageReceive = (MessageReceive) JSONObject.toJavaObject(innerObject, MessageReceive.class);
+                    String toAccountId = messageReceive.getToAccountId().toString();
+                    //追加发送人(防止篡改)
+                    messageReceive.setFromAccountId(this.accountId);
+                    String fromAccountId = messageReceive.getFromAccountId().toString();
 
-                if (StringUtils.isNotBlank(toAccountId) && webSocketMap.containsKey(toAccountId)) {
-                    jsonObject.put("messageType", "100");  //在线已发送
-                    webSocketMap.get(toAccountId).sendMessage(jsonObject.toJSONString());
+                    // 消息入库，并更新发送人会话、接收人会话，查询发送人会话列表接收人会话列表返回此处
+                    Map<String, List<BaseDialogue>> baseDialogueListMap = messageService.onMessage(messageReceive);
+
+                    // 发送发送消息返回回执给发送人；内容是发送人会话列表
+                    Map<String, Object> messageReceiveResponseMap = new HashMap<>();
+                    messageReceiveResponseMap.put("messageType", "801");
+                    MessageReceiveResponse messageReceiveResponse = new MessageReceiveResponse();
+                    //todo
+                    messageReceiveResponseMap.put("object", messageReceiveResponse);
+                    webSocketMap.get(fromAccountId).sendMessage(JSON.toJSONString(messageReceiveResponseMap));
+
+                    // 如果接收人在线，发送服务端发送消息消息体，内容包括消息信息和会话列表
+                    if (StringUtils.isNotBlank(toAccountId) && webSocketMap.containsKey(toAccountId)) {
+                        Map<String, Object> messageSendMap = new HashMap<>();
+                        messageSendMap.put("messageType", "801");
+                        MessageSend messageSend = new MessageSend();
+                        //todo
+                        messageSendMap.put("object", messageSend);
+                        webSocketMap.get(toAccountId).sendMessage(JSON.toJSONString(messageSendMap));
+                    }
+
+                } else if ("803".equals(messageType)) {
+
                 } else {
-                    jsonObject.put("messageType", "100");  //不在线在线已发送
-                    log.error("请求的accountId:" + toAccountId + "不在该服务器上");
-                    //否则不在这个服务器上，发送到mysql或者redis
+                    Map<String, String> returnMap = new HashMap<>();
+                    returnMap.put("messageType", "500");
+                    returnMap.put("messageContent", "不支持的消息类型");
+                    webSocketMap.get(this.accountId.toString()).sendMessage(JSON.toJSONString(returnMap));
                 }
-                messageService.onMessage(jsonObject);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -99,7 +130,7 @@ public class WebSocketServer {
      */
     @OnError
     public void onError(Session session, Throwable error) {
-        log.error("用户错误:" + this.accountId + ",原因:" + error.getMessage());
+        log.error("用户错误:" + this.accountId + ", 原因:" + error.getMessage());
         error.printStackTrace();
     }
 
@@ -127,11 +158,11 @@ public class WebSocketServer {
     }
 
     private static synchronized void addOnlineCount() {
-        WebSocketServer.onlineCount++;
+        WebSocketServer.onlineCount ++;
     }
 
     private static synchronized void subOnlineCount() {
-        WebSocketServer.onlineCount--;
+        WebSocketServer.onlineCount --;
     }
 
 }
