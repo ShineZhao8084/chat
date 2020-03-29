@@ -1,7 +1,8 @@
 package com.dj.chat.main.mapper;
 
 import com.dj.chat.main.bean.BaseDialogue;
-import com.dj.chat.main.bean.BaseDialogueWithFriendAndAccount;
+import com.dj.chat.main.bean.BaseDialogueExtend;
+import com.dj.chat.main.bean.BaseMessage;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,10 +23,12 @@ public interface BaseDialogueMapper {
 
     int updateByPrimaryKey(BaseDialogue record);
 
-    List<BaseDialogueWithFriendAndAccount> listAllMyDialogueByAccountId(Long accountId);
+    List<BaseDialogueExtend> listAllMyDialogueByAccountId(Long accountId);
 
-    List<BaseDialogueWithFriendAndAccount> listMyDialogue(@Param("accountId") Long accountId, @Param("param") String param);
+    List<BaseDialogueExtend> listMyDialogue(@Param("accountId") Long accountId, @Param("param") String param);
 
+    void updateByFromAccountIdAndToAccountId(BaseDialogue baseDialogueSender);
 
+    BaseDialogue selectByFromAccountIdAndToAccountId(@Param("from") Long from, @Param("to") Long to);
 
 }

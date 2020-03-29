@@ -1,6 +1,7 @@
 package com.dj.chat.main.bean;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author 
@@ -15,11 +16,17 @@ public class BaseDialogue implements Serializable {
 
     private Long lastMessageId;
 
-    private String lastReadMessageContent;
+    private String lastMessageContent;
 
     private Long lastReadMessageId;
 
-    private Integer unreadMessageCount;
+    private Date dialogueCreateTime;
+
+    private Date dialogueUpdateTime;
+
+    private Byte dialogueIsOnTop;
+
+    private Date dialogueOnTopTime;
 
     private static final long serialVersionUID = 1L;
 
@@ -55,12 +62,12 @@ public class BaseDialogue implements Serializable {
         this.lastMessageId = lastMessageId;
     }
 
-    public String getLastReadMessageContent() {
-        return lastReadMessageContent;
+    public String getLastMessageContent() {
+        return lastMessageContent;
     }
 
-    public void setLastReadMessageContent(String lastReadMessageContent) {
-        this.lastReadMessageContent = lastReadMessageContent;
+    public void setLastMessageContent(String lastMessageContent) {
+        this.lastMessageContent = lastMessageContent;
     }
 
     public Long getLastReadMessageId() {
@@ -71,11 +78,35 @@ public class BaseDialogue implements Serializable {
         this.lastReadMessageId = lastReadMessageId;
     }
 
-    public Integer getUnreadMessageCount() {
-        return unreadMessageCount;
+    public Date getDialogueCreateTime() {
+        return dialogueCreateTime;
     }
 
-    public void setUnreadMessageCount(Integer unreadMessageCount) {
-        this.unreadMessageCount = unreadMessageCount;
+    public void setDialogueCreateTime(Date dialogueCreateTime) {
+        this.dialogueCreateTime = dialogueCreateTime;
+    }
+
+    public Date getDialogueUpdateTime() {
+        return dialogueUpdateTime;
+    }
+
+    public void setDialogueUpdateTime(Date dialogueUpdateTime) {
+        this.dialogueUpdateTime = dialogueUpdateTime;
+    }
+
+    public Byte getDialogueIsOnTop() {
+        return dialogueIsOnTop;
+    }
+
+    public void setDialogueIsOnTop(Byte dialogueIsOnTop) {
+        this.dialogueIsOnTop = dialogueIsOnTop;
+    }
+
+    public Date getDialogueOnTopTime() {
+        return dialogueOnTopTime;
+    }
+
+    public void setDialogueOnTopTime(Date dialogueOnTopTime) {
+        this.dialogueOnTopTime = dialogueOnTopTime;
     }
 }

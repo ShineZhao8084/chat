@@ -3,6 +3,7 @@ let friendListData = {};
 let messagesContent = $(".messages-content");
 let chatBody = $(".chat-body");
 let chatContent = $(".chat-content");
+let nextPage = 0;
 $(function () {
     scrollToBottom();
     openSocket();
@@ -19,6 +20,7 @@ function listAllMyDialogue() {
             var msg = result.msg;
             if ("200" === result.status) {
                 dialogueListData = result.result;
+                console.log(dialogueListData)
                 generateDialogueListView();
             } else {
                 console.log(result)
@@ -60,17 +62,122 @@ function listAllMyFriend() {
     });
 }
 
+
+$(".chat-begin").on("click", ".chat-begin-item", function () {
+    let $currentDialogueId = $("#currentDialogueId");
+    if ($currentDialogueId.val() !==  $(this).find(".dialogueId").val()) {
+        $("#toUserId").val($(this).find(".accountId").val());
+        let dialogueId = $(this).find(".dialogueId").val();
+        $currentDialogueId.val(dialogueId);
+        $(this).find(".message-count").css("visibility", "hidden");
+
+        $(".to-friend-name").text($(this).find("h3").text());
+        $(".to-friend-header").attr("src", $(this).find("img").attr("src"));
+
+        $.ajax({
+            url: "/message/" + dialogueId + "/1",
+            type: "GET",
+            success: function (result) {
+                result = JSON.parse(result);
+                let hasNextPage = result.hasNextPage;
+                let messageList = result.list;
+                nextPage = result.nextPage;
+                $(".messages-content").html("");
+                loadMessage(messageList, hasNextPage);
+                chatContent.show();
+                scrollToBottom();
+            }
+        });
+
+    }
+
+
+});
+
+function loadMessage(messageList, hasNextPage) {
+    $(".moreHtmlWrapper").remove();
+    const myAccountId = $("#accountId").val();
+    let myProfile = $(".my-profile");
+    let count = messageList.length;
+    messageList.forEach((item, index, array) => {
+        //执行代码
+        let isOutGoing = item.baseMessageFrom.toString() === myAccountId;
+        let isOutGoingString = isOutGoing ? "outgoing-message" : "";
+        let srcString = isOutGoing ? myProfile.attr("src") : $(".to-friend-header").attr("src");
+        let name = isOutGoing ? $(".my-login-name").text() : $(".to-friend-name").text();
+        let html = "<div class=\"message-item " + isOutGoingString + "\">";
+        let lastMessageFrom = 0;
+
+        if (index + 1 === count) {
+            lastMessageFrom = 0;
+        } else {
+            lastMessageFrom = messageList[index + 1].baseMessageFrom;
+        }
+        if (item.baseMessageFrom !== lastMessageFrom) {
+            html += "<div class=\"message-user\">";
+            html += "   <figure class=\"avatar\">";
+            html += "       <img alt=\"image\" src=" + srcString + ">";
+            html += "   </figure>";
+            html += "   <div>";
+            html += "       <h5>" + name + "</h5>";
+            html += "       <div class=\"time\">01:35 PM</div>";
+            html += "   </div>";
+            html += "</div>";
+        }
+        html += "<div class=\"message-wrap\">" + item.baseMessageContent + "</div>";
+        html += "</div>";
+        //console.log("html: " + html);
+        messagesContent.prepend(html);
+    });
+    if (hasNextPage) {
+        let moreHtml = "<div class=\"moreHtmlWrapper\" style=\"width: 100%; text-align: center;\">" +
+            "<span id=\"moreHtml\" onclick='more()'>查看更多</span>" +
+            "</div>";
+        messagesContent.prepend(moreHtml);
+    }
+
+}
+
+function more () {
+    $.ajax({
+        url: "/message/" + $("#currentDialogueId").val() + "/" + nextPage,
+        type: "GET",
+        success: function (result) {
+            result = JSON.parse(result);
+            let hasNextPage = result.hasNextPage;
+            let messageList = result.list;
+            nextPage = result.nextPage;
+            loadMessage(messageList, hasNextPage);
+
+
+        }
+    });
+};
+
 function generateDialogueListView() {
     var finalHtml = "";
     for (var i in dialogueListData) {
-        var html = "<li class=\"chat-list-item chat-begin-item active\">";
-        html += "       <figure class=\"avatar user-online\"><img src=\"/images/user-2.png\" alt=\"image\"></figure>" +
-            "           <input class=\"accountId\" value=\"" + dialogueListData[i].dialogueFriendId + "\" style=\"display: none\"/>" +
-            "           <div class=\"list-body\">" +
-            "               <div class=\"chat-bttn\"><h3 class=\"mb-0 mt-2\">" + dialogueListData[i].baseFriend.friendName + "</h3><p>What's up, how are you?</p></div>" +
-            "               <div class=\"list-action mt-2 text-right\"><div class=\"message-count bg-primary\">3</div><small class=\"text-primary\">03:41 PM</small></div>" +
-            "           </div>" +
-            "       </li>";
+        let html = "";
+        const unReadMessageCount = dialogueListData[i].unReadMessageCount;
+        let displayMethod = "";
+        if (0 !== unReadMessageCount && null !== unReadMessageCount) {
+            displayMethod = "inherit";
+        } else {
+            displayMethod = "hidden";
+        }
+        html += "<li class=\"chat-list-item chat-begin-item active\">";
+        html += "   <figure class=\"avatar user-online\"><img src=\"/images/user-2.png\" alt=\"image\"></figure>";
+        html += "   <input class=\"accountId\" value=\"" + dialogueListData[i].dialogueFriendId + "\" style=\"display: none\"/>";
+        html += "   <input class=\"dialogueId\" value=\"" + dialogueListData[i].dialogueId + "\" style=\"display: none\"/>";
+        html += "   <input class=\"lastMessageId\" value=\"" + dialogueListData[i].lastMessageId + "\" style=\"display: none\"/>";
+        html += "   <div class=\"list-body\">";
+        html += "       <div class=\"chat-bttn\"><h3 class=\"mb-0 mt-2\">" + dialogueListData[i].friendName + "</h3><p>" + dialogueListData[i].lastMessageContent + "</p></div>";
+        html += "       <div class=\"list-action mt-2 text-right\">";
+        html += "           <div class=\"message-count bg-primary\" style='visibility: " + displayMethod + "'>" + unReadMessageCount + "</div>";
+        html += "           <small class=\"text-primary\">03:41 PM</small>";
+        html += "       </div>";
+        html += "   </div>";
+        html += "</li>";
         finalHtml += html;
     }
     $("#dialogueList").html(finalHtml);
@@ -115,7 +222,7 @@ function openSocket() {
         //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
         //等同于socket = new WebSocket("ws://localhost:8888/xxxx/im/25");
         //var socketUrl="${request.contextPath}/im/"+$("#userId").val();
-        var socketUrl = "ws://10.73.240.25/imserver/" + $("#accountId").val();
+        var socketUrl = "ws://127.0.0.1/imserver/" + $("#accountId").val();
         //socketUrl = socketUrl.replace("https", "ws").replace("http", "ws");
         console.log(socketUrl);
         if (socket != null) {
@@ -134,26 +241,45 @@ function openSocket() {
             //发现消息进入    开始处理前端触发逻辑
             console.log(response.messageType);
             if ("801" === response.messageType) {   //801 发送消息的回执
-                console.log("已发送");
+                dialogueListData = response.object.baseDialogueExtendList;
+                generateDialogueListView();
             } else if ("802" === response.messageType) {   //802 接受来自其他用户的信息
-                let html = "<div class=\"message-item\">";
-                let flag = messagesContent.children(".message-item:last-child").hasClass("outgoing-message");
-                if (flag) {
-                    html += "<div class=\"message-user\">";
-                    html += "   <figure class=\"avatar\">";
-                    html += "       <img src=\"/images/user-9.png\" alt=\"image\">";
-                    html += "   </figure>";
-                    html += "   <div>";
-                    html += "       <h5>Byrom Guittet</h5>";
-                    html += "       <div class=\"time\">01:35 PM</div>";
-                    html += "   </div>";
+                const currentDialogueId = $("#currentDialogueId").val();
+                let baseDialogue = response.object.baseDialogue;
+                let baseDialogueExtendList = response.object.baseDialogueExtendList;
+                let baseMessage = response.object.baseMessage;
+                console.log(baseDialogue);
+                if (baseDialogue.dialogueId + "" === currentDialogueId) {  //当前聊天窗口
+                    for (let i in baseDialogueExtendList) {
+                        if (baseDialogueExtendList[i].dialogueId.toString() === currentDialogueId) {
+                            baseDialogueExtendList[i].unReadMessageCount = 0;
+                        }
+                    }
+                    let html = "<div class=\"message-item\">";
+                    let flag = messagesContent.children(".message-item:last-child").hasClass("outgoing-message");
+                    if (0 === messagesContent.children().length) {
+                        flag = true;
+                    }
+                    if (flag) {
+                        html += "<div class=\"message-user\">";
+                        html += "   <figure class=\"avatar\">";
+                        html += "       <img alt=\"image\" src=" + $(".to-friend-header").attr("src") + ">";
+                        html += "   </figure>";
+                        html += "   <div>";
+                        html += "       <h5>" + $(".to-friend-name").text() + "</h5>";
+                        html += "       <div class=\"time\">01:35 PM</div>";
+                        html += "   </div>";
+                        html += "</div>";
+                    }
+                    html += "<div class=\"message-wrap\">" + baseMessage.baseMessageContent + "</div>";
                     html += "</div>";
+                    messagesContent.append(html);
+                    scrollToBottom();
+                } else {
+
                 }
-                html += "<div class=\"message-wrap\">" + response.contentText + "</div>";
-                html += "</div>";
-                console.log("1: " + messagesContent.height());
-                messagesContent.append(html);
-                scrollToBottom();
+                dialogueListData = baseDialogueExtendList;
+                generateDialogueListView();
             }
 
         };
@@ -181,12 +307,6 @@ function showMessage(msg) {
     })
 }
 
-$(".chat-begin").on("click", ".chat-begin-item", function () {
-    console.log("234");
-    $("#toUserId").val($(this).find(".accountId").val())
-    chatContent.show();
-    scrollToBottom();
-});
 
 $("#searchForDialogue").click(function (e) {
     e.preventDefault();
@@ -277,10 +397,10 @@ $("#sendMessage").click(function (e) {
         if (!flag) {
             html += "<div class=\"message-user\">" +
                 "<figure class=\"avatar\">" +
-                "<img src=\"/images/user-9.png\" alt=\"image\">" +
+                "<img alt=\"image\" src=" + $(".profile-detail-bttn").find("img").attr("src") + ">" +
                 "</figure>" +
                 "<div>" +
-                "<h5>Byrom Guittet</h5>" +
+                "<h5>我</h5>" +
                 "<div class=\"time\">01:35 PM</div>" +
                 "</div></div>";
         }

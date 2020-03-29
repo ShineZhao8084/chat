@@ -1,7 +1,7 @@
 package com.dj.chat.main.service.impl;
 
 import com.dj.chat.main.bean.BaseDialogue;
-import com.dj.chat.main.bean.BaseDialogueWithFriendAndAccount;
+import com.dj.chat.main.bean.BaseDialogueExtend;
 import com.dj.chat.main.mapper.BaseDialogueMapper;
 import com.dj.chat.main.service.DialogueService;
 import org.springframework.stereotype.Service;
@@ -16,12 +16,12 @@ public class DialogueServiceImpl implements DialogueService {
     private BaseDialogueMapper baseDialogueMapper;
 
     @Override
-    public List<BaseDialogueWithFriendAndAccount> listAllMyDialogueByAccountId(Long accountId) {
+    public List<BaseDialogueExtend> listAllMyDialogueByAccountId(Long accountId) {
         return baseDialogueMapper.listAllMyDialogueByAccountId(accountId);
     }
 
     @Override
-    public List<BaseDialogueWithFriendAndAccount> listMyDialogue(Long accountId, String param) {
+    public List<BaseDialogueExtend> listMyDialogue(Long accountId, String param) {
         return baseDialogueMapper.listMyDialogue(accountId, param);
     }
 

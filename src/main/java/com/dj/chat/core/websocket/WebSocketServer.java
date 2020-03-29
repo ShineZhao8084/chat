@@ -2,11 +2,11 @@ package com.dj.chat.core.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.dj.chat.core.util.SpringUtil;
 import com.dj.chat.core.websocket.bean.MessageReceive;
 import com.dj.chat.core.websocket.bean.MessageReceiveResponse;
 import com.dj.chat.core.websocket.bean.MessageSend;
-import com.dj.chat.main.bean.BaseDialogue;
-import com.dj.chat.main.bean.BaseMessage;
+import com.dj.chat.main.bean.BaseDialogueResponseWrapper;
 import com.dj.chat.main.service.MessageService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -18,14 +18,12 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/imserver/{accountId}")
 @Component
+@ServerEndpoint("/imserver/{accountId}")
 public class WebSocketServer {
 
     private static Log log = LogFactory.getLog(WebSocketServer.class);
@@ -34,8 +32,7 @@ public class WebSocketServer {
     private static ConcurrentHashMap<String, WebSocketServer> webSocketMap = new ConcurrentHashMap<>();
     private Session session;  //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Long accountId;  //accountId
-    @Resource
-    private MessageService messageService;
+    private MessageService messageService = SpringUtil.getBean(MessageService.class);
 
     /**
      * 连接建立成功调用的方法
@@ -89,26 +86,27 @@ public class WebSocketServer {
                     String fromAccountId = messageReceive.getFromAccountId().toString();
 
                     // 消息入库，并更新发送人会话、接收人会话，查询发送人会话列表接收人会话列表返回此处
-                    Map<String, List<BaseDialogue>> baseDialogueListMap = messageService.onMessage(messageReceive);
+                    BaseDialogueResponseWrapper baseDialogueListMap = messageService.onMessage(messageReceive);
 
                     // 发送发送消息返回回执给发送人；内容是发送人会话列表
                     Map<String, Object> messageReceiveResponseMap = new HashMap<>();
                     messageReceiveResponseMap.put("messageType", "801");
                     MessageReceiveResponse messageReceiveResponse = new MessageReceiveResponse();
-                    //todo
+                    messageReceiveResponse.setBaseDialogueExtendList(baseDialogueListMap.getFromBaseDialogueList());
                     messageReceiveResponseMap.put("object", messageReceiveResponse);
                     webSocketMap.get(fromAccountId).sendMessage(JSON.toJSONString(messageReceiveResponseMap));
 
                     // 如果接收人在线，发送服务端发送消息消息体，内容包括消息信息和会话列表
                     if (StringUtils.isNotBlank(toAccountId) && webSocketMap.containsKey(toAccountId)) {
                         Map<String, Object> messageSendMap = new HashMap<>();
-                        messageSendMap.put("messageType", "801");
+                        messageSendMap.put("messageType", "802");
                         MessageSend messageSend = new MessageSend();
-                        //todo
+                        messageSend.setBaseMessage(baseDialogueListMap.getBaseMessage());
+                        messageSend.setBaseDialogue(baseDialogueListMap.getBaseDialogue());
+                        messageSend.setBaseDialogueExtendList(baseDialogueListMap.getToBaseDialogueList());
                         messageSendMap.put("object", messageSend);
                         webSocketMap.get(toAccountId).sendMessage(JSON.toJSONString(messageSendMap));
                     }
-
                 } else if ("803".equals(messageType)) {
 
                 } else {

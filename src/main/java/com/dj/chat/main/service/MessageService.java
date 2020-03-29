@@ -1,14 +1,15 @@
 package com.dj.chat.main.service;
 
 import com.dj.chat.core.websocket.bean.MessageReceive;
-import com.dj.chat.main.bean.BaseDialogue;
+import com.dj.chat.main.bean.BaseDialogueResponseWrapper;
+import com.dj.chat.main.bean.BaseMessage;
+import com.github.pagehelper.PageInfo;
 
 import java.util.List;
-import java.util.Map;
 
 public interface MessageService {
 
-    Map<String, List<BaseDialogue>> onMessage(MessageReceive messageReceive);
+    BaseDialogueResponseWrapper onMessage(MessageReceive messageReceive);
 
-
+    PageInfo<BaseMessage> getMyMessageByDialogueId(Long dialogueId, int currentPage);
 }

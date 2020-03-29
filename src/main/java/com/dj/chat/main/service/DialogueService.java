@@ -1,14 +1,14 @@
 package com.dj.chat.main.service;
 
-import com.dj.chat.main.bean.BaseDialogueWithFriendAndAccount;
+import com.dj.chat.main.bean.BaseDialogueExtend;
 
 import java.util.List;
 
 public interface DialogueService {
 
-    List<BaseDialogueWithFriendAndAccount> listAllMyDialogueByAccountId(Long accountId);
+    List<BaseDialogueExtend> listAllMyDialogueByAccountId(Long accountId);
 
-    List<BaseDialogueWithFriendAndAccount> listMyDialogue(Long accountId, String param);
+    List<BaseDialogueExtend> listMyDialogue(Long accountId, String param);
 
 
 }

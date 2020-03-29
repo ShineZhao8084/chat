@@ -6,39 +6,29 @@
         <result column="DIALOGUE_FRIEND_ID" jdbcType="BIGINT" property="dialogueFriendId"/>
         <result column="DIALOGUE_MYSELF_ID" jdbcType="BIGINT" property="dialogueMyselfId"/>
         <result column="LAST_MESSAGE_ID" jdbcType="BIGINT" property="lastMessageId"/>
-        <result column="LAST_READ_MESSAGE_CONTENT" jdbcType="VARCHAR" property="lastReadMessageContent"/>
+        <result column="LAST_MESSAGE_CONTENT" jdbcType="VARCHAR" property="lastMessageContent"/>
         <result column="LAST_READ_MESSAGE_ID" jdbcType="BIGINT" property="lastReadMessageId"/>
-        <result column="UNREAD_MESSAGE_COUNT" jdbcType="INTEGER" property="unreadMessageCount"/>
+        <result column="DIALOGUE_CREATE_TIME" jdbcType="TIMESTAMP" property="dialogueCreateTime"/>
+        <result column="DIALOGUE_UPDATE_TIME" jdbcType="TIMESTAMP" property="dialogueUpdateTime"/>
+        <result column="DIALOGUE_IS_ON_TOP" jdbcType="TINYINT" property="dialogueIsOnTop"/>
+        <result column="DIALOGUE_ON_TOP_TIME" jdbcType="TIMESTAMP" property="dialogueOnTopTime"/>
     </resultMap>
-    <resultMap id="BaseResultMapWithFriendAndAccount" type="com.dj.chat.main.bean.BaseDialogueWithFriendAndAccount">
+    <sql id="Base_Column_List">
+        DIALOGUE_ID, DIALOGUE_FRIEND_ID, DIALOGUE_MYSELF_ID, LAST_MESSAGE_ID, LAST_MESSAGE_CONTENT,
+        LAST_READ_MESSAGE_ID, DIALOGUE_CREATE_TIME, DIALOGUE_UPDATE_TIME, DIALOGUE_IS_ON_TOP,
+        DIALOGUE_ON_TOP_TIME
+    </sql>
+    <resultMap id="BaseResultMapExtend" type="com.dj.chat.main.bean.BaseDialogueExtend">
         <id column="DIALOGUE_ID" jdbcType="BIGINT" property="dialogueId"/>
         <result column="DIALOGUE_FRIEND_ID" jdbcType="BIGINT" property="dialogueFriendId"/>
         <result column="DIALOGUE_MYSELF_ID" jdbcType="BIGINT" property="dialogueMyselfId"/>
         <result column="LAST_MESSAGE_ID" jdbcType="BIGINT" property="lastMessageId"/>
-        <result column="LAST_READ_MESSAGE_CONTENT" jdbcType="VARCHAR" property="lastReadMessageContent"/>
+        <result column="LAST_MESSAGE_CONTENT" jdbcType="VARCHAR" property="lastMessageContent"/>
         <result column="LAST_READ_MESSAGE_ID" jdbcType="BIGINT" property="lastReadMessageId"/>
-        <association property="baseAccount" javaType="com.dj.chat.main.bean.BaseAccount">
-            <id column="ACCOUNT_ID" jdbcType="BIGINT" property="accountId"/>
-            <result column="USER_NAME" jdbcType="VARCHAR" property="userName"/>
-            <result column="LOGIN_NAME" jdbcType="VARCHAR" property="loginName"/>
-            <result column="BIRTHDAY" jdbcType="TIMESTAMP" property="birthday"/>
-            <result column="PHONE" jdbcType="VARCHAR" property="phone"/>
-            <result column="EMAIL" jdbcType="VARCHAR" property="email"/>
-            <result column="PROFILE_PHOTO" jdbcType="BINARY" property="profilePhoto"/>
-        </association>
-        <association property="baseFriend" javaType="com.dj.chat.main.bean.BaseFriend">
-            <id column="FRIEND_ID" jdbcType="BIGINT" property="friendId"/>
-            <result column="FRIEND_ACCOUNT_ID" jdbcType="BIGINT" property="friendAccountId"/>
-            <result column="FRIEND_MYSELF_ID" jdbcType="BIGINT" property="friendMyselfId"/>
-            <result column="FRIEND_NAME" jdbcType="VARCHAR" property="friendName"/>
-        </association>
+        <result column="LOGIN_NAME" jdbcType="VARCHAR" property="loginName"/>
+        <result column="FRIEND_NAME" jdbcType="VARCHAR" property="friendName"/>
+        <result column="UN_READ_MESSAGE_COUNT" jdbcType="INTEGER" property="unReadMessageCount"/>
     </resultMap>
-
-    <sql id="Base_Column_List">
-        DIALOGUE_ID, DIALOGUE_FRIEND_ID, DIALOGUE_MYSELF_ID, LAST_MESSAGE_ID, LAST_READ_MESSAGE_CONTENT,
-        LAST_READ_MESSAGE_ID
-    </sql>
-
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -46,27 +36,50 @@
         where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}
     </select>
 
-    <select id="listAllMyDialogueByAccountId" parameterType="java.lang.Long" resultMap="BaseResultMapWithFriendAndAccount">
+    <select id="selectByFromAccountIdAndToAccountId" parameterType="com.dj.chat.main.bean.BaseDialogue" resultMap="BaseResultMap">
         select
-        d.DIALOGUE_ID, d.DIALOGUE_FRIEND_ID, d.DIALOGUE_MYSELF_ID, d.LAST_MESSAGE_ID, d.LAST_READ_MESSAGE_CONTENT, d.LAST_READ_MESSAGE_ID,
-        a.ACCOUNT_ID, a.USER_NAME, a.LOGIN_NAME, a.BIRTHDAY, a.PHONE, a.EMAIL, a.PROFILE_PHOTO,
-        f.FRIEND_ID, f.FRIEND_ACCOUNT_ID, f.FRIEND_MYSELF_ID, f.FRIEND_NAME
+        <include refid="Base_Column_List"/>
+        from base_dialogue
+        where DIALOGUE_FRIEND_ID = #{from,jdbcType=BIGINT}
+        and DIALOGUE_MYSELF_ID = #{to,jdbcType=BIGINT}
+    </select>
+
+    <select id="listAllMyDialogueByAccountId" parameterType="java.lang.Long" resultMap="BaseResultMapExtend">
+        select
+            d.DIALOGUE_ID, d.DIALOGUE_FRIEND_ID, d.DIALOGUE_MYSELF_ID, d.LAST_MESSAGE_ID, d.LAST_MESSAGE_CONTENT,
+            d.LAST_READ_MESSAGE_ID,
+            a.LOGIN_NAME, f.FRIEND_NAME,
+            (
+                select
+                    count(1)
+                from base_message m
+                where m.BASE_MESSAGE_FROM = d.DIALOGUE_FRIEND_ID and m.BASE_MESSAGE_TO = d.DIALOGUE_MYSELF_ID
+                and m.BASE_MESSAGE_BELONG = d.DIALOGUE_MYSELF_ID
+                and m.BASE_MESSAGE_ID <![CDATA[ > ]]> d.LAST_READ_MESSAGE_ID
+            ) UN_READ_MESSAGE_COUNT
         from base_dialogue d
         left join base_account a on d.DIALOGUE_FRIEND_ID = a.ACCOUNT_ID
         left join base_friend f on d.DIALOGUE_FRIEND_ID = f.FRIEND_ACCOUNT_ID
         where DIALOGUE_MYSELF_ID = #{accountId, jdbcType=BIGINT}
     </select>
 
-    <select id="listMyDialogue" resultMap="BaseResultMapWithFriendAndAccount">
+    <select id="listMyDialogue" resultMap="BaseResultMapExtend">
         select * from (
-            select
-                d.DIALOGUE_ID, d.DIALOGUE_FRIEND_ID, d.DIALOGUE_MYSELF_ID, d.LAST_MESSAGE_ID, d.LAST_READ_MESSAGE_CONTENT, d.LAST_READ_MESSAGE_ID,
-                a.ACCOUNT_ID, a.USER_NAME, a.LOGIN_NAME, a.BIRTHDAY, a.PHONE, a.EMAIL, a.PROFILE_PHOTO,
-                f.FRIEND_ID, f.FRIEND_ACCOUNT_ID, f.FRIEND_MYSELF_ID, f.FRIEND_NAME
-            from base_dialogue d
-            left join base_account a on d.DIALOGUE_FRIEND_ID = a.ACCOUNT_ID
-            left join base_friend f on d.DIALOGUE_FRIEND_ID = f.FRIEND_ACCOUNT_ID
-            where DIALOGUE_MYSELF_ID = #{accountId, jdbcType=BIGINT}
+        select
+        d.DIALOGUE_ID, d.DIALOGUE_FRIEND_ID, d.DIALOGUE_MYSELF_ID, d.LAST_MESSAGE_ID, d.LAST_MESSAGE_CONTENT,
+        d.LAST_READ_MESSAGE_ID,
+        a.LOGIN_NAME, f.FRIEND_NAME,
+        (
+        select
+        count(1)
+        from base_message m
+        where m.BASE_MESSAGE_FROM = d.DIALOGUE_FRIEND_ID and m.BASE_MESSAGE_TO = d.DIALOGUE_MYSELF_ID
+        and m.BASE_MESSAGE_ID > d.LAST_READ_MESSAGE_ID
+        ) UN_READ_MESSAGE_COUNT
+        from base_dialogue d
+        left join base_account a on d.DIALOGUE_FRIEND_ID = a.ACCOUNT_ID
+        left join base_friend f on d.DIALOGUE_FRIEND_ID = f.FRIEND_ACCOUNT_ID
+        where DIALOGUE_MYSELF_ID = #{accountId, jdbcType=BIGINT}
         ) s
         where s.LOGIN_NAME like concat('%', #{param, jdbcType=VARCHAR}, '%')
         or s.FRIEND_NAME like concat('%', #{param, jdbcType=VARCHAR}, '%')
@@ -78,12 +91,13 @@
     </delete>
     <insert id="insert" parameterType="com.dj.chat.main.bean.BaseDialogue">
         insert into base_dialogue (DIALOGUE_ID, DIALOGUE_FRIEND_ID, DIALOGUE_MYSELF_ID,
-        LAST_MESSAGE_ID, LAST_READ_MESSAGE_CONTENT, LAST_READ_MESSAGE_ID,
-        UNREAD_MESSAGE_COUNT)
+        LAST_MESSAGE_ID, LAST_MESSAGE_CONTENT, LAST_READ_MESSAGE_ID,
+        DIALOGUE_CREATE_TIME, DIALOGUE_UPDATE_TIME,
+        DIALOGUE_IS_ON_TOP, DIALOGUE_ON_TOP_TIME)
         values (#{dialogueId,jdbcType=BIGINT}, #{dialogueFriendId,jdbcType=BIGINT}, #{dialogueMyselfId,jdbcType=BIGINT},
-        #{lastMessageId,jdbcType=BIGINT}, #{lastReadMessageContent,jdbcType=VARCHAR},
-        #{lastReadMessageId,jdbcType=BIGINT},
-        #{unreadMessageCount,jdbcType=INTEGER})
+        #{lastMessageId,jdbcType=BIGINT}, #{lastMessageContent,jdbcType=VARCHAR}, #{lastReadMessageId,jdbcType=BIGINT},
+        #{dialogueCreateTime,jdbcType=TIMESTAMP}, #{dialogueUpdateTime,jdbcType=TIMESTAMP},
+        #{dialogueIsOnTop,jdbcType=TINYINT}, #{dialogueOnTopTime,jdbcType=TIMESTAMP})
     </insert>
     <insert id="insertSelective" parameterType="com.dj.chat.main.bean.BaseDialogue">
         insert into base_dialogue
@@ -100,14 +114,23 @@
             <if test="lastMessageId != null">
                 LAST_MESSAGE_ID,
             </if>
-            <if test="lastReadMessageContent != null">
-                LAST_READ_MESSAGE_CONTENT,
+            <if test="lastMessageContent != null">
+                LAST_MESSAGE_CONTENT,
             </if>
             <if test="lastReadMessageId != null">
                 LAST_READ_MESSAGE_ID,
             </if>
-            <if test="unreadMessageCount != null">
-                UNREAD_MESSAGE_COUNT,
+            <if test="dialogueCreateTime != null">
+                DIALOGUE_CREATE_TIME,
+            </if>
+            <if test="dialogueUpdateTime != null">
+                DIALOGUE_UPDATE_TIME,
+            </if>
+            <if test="dialogueIsOnTop != null">
+                DIALOGUE_IS_ON_TOP,
+            </if>
+            <if test="dialogueOnTopTime != null">
+                DIALOGUE_ON_TOP_TIME,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -123,40 +146,53 @@
             <if test="lastMessageId != null">
                 #{lastMessageId,jdbcType=BIGINT},
             </if>
-            <if test="lastReadMessageContent != null">
-                #{lastReadMessageContent,jdbcType=VARCHAR},
+            <if test="lastMessageContent != null">
+                #{lastMessageContent,jdbcType=VARCHAR},
             </if>
             <if test="lastReadMessageId != null">
                 #{lastReadMessageId,jdbcType=BIGINT},
             </if>
-            <if test="unreadMessageCount != null">
-                #{unreadMessageCount,jdbcType=INTEGER},
+            <if test="dialogueCreateTime != null">
+                #{dialogueCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dialogueUpdateTime != null">
+                #{dialogueUpdateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dialogueIsOnTop != null">
+                #{dialogueIsOnTop,jdbcType=TINYINT},
+            </if>
+            <if test="dialogueOnTopTime != null">
+                #{dialogueOnTopTime,jdbcType=TIMESTAMP},
             </if>
         </trim>
     </insert>
-    <update id="updateBy" parameterType="com.dj.chat.main.bean.BaseDialogue">
+
+    <update id="updateByFromAccountIdAndToAccountId" parameterType="com.dj.chat.main.bean.BaseDialogue">
         update base_dialogue
         <set>
-            <if test="dialogueFriendId != null">
-                DIALOGUE_FRIEND_ID = #{dialogueFriendId,jdbcType=BIGINT},
-            </if>
-            <if test="dialogueMyselfId != null">
-                DIALOGUE_MYSELF_ID = #{dialogueMyselfId,jdbcType=BIGINT},
-            </if>
             <if test="lastMessageId != null">
                 LAST_MESSAGE_ID = #{lastMessageId,jdbcType=BIGINT},
             </if>
-            <if test="lastReadMessageContent != null">
-                LAST_READ_MESSAGE_CONTENT = #{lastReadMessageContent,jdbcType=VARCHAR},
+            <if test="lastMessageContent != null">
+                LAST_MESSAGE_CONTENT = #{lastMessageContent,jdbcType=VARCHAR},
             </if>
             <if test="lastReadMessageId != null">
                 LAST_READ_MESSAGE_ID = #{lastReadMessageId,jdbcType=BIGINT},
             </if>
-            <if test="unreadMessageCount != null">
-                UNREAD_MESSAGE_COUNT = #{unreadMessageCount,jdbcType=INTEGER},
+            <if test="dialogueCreateTime != null">
+                DIALOGUE_CREATE_TIME = #{dialogueCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dialogueUpdateTime != null">
+                DIALOGUE_UPDATE_TIME = #{dialogueUpdateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dialogueIsOnTop != null">
+                DIALOGUE_IS_ON_TOP = #{dialogueIsOnTop,jdbcType=TINYINT},
+            </if>
+            <if test="dialogueOnTopTime != null">
+                DIALOGUE_ON_TOP_TIME = #{dialogueOnTopTime,jdbcType=TIMESTAMP},
             </if>
         </set>
-        where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}
+        where DIALOGUE_FRIEND_ID = #{dialogueFriendId,jdbcType=BIGINT} and DIALOGUE_MYSELF_ID = #{dialogueMyselfId,jdbcType=BIGINT}
     </update>
     <update id="updateByPrimaryKeySelective" parameterType="com.dj.chat.main.bean.BaseDialogue">
         update base_dialogue
@@ -170,14 +206,23 @@
             <if test="lastMessageId != null">
                 LAST_MESSAGE_ID = #{lastMessageId,jdbcType=BIGINT},
             </if>
-            <if test="lastReadMessageContent != null">
-                LAST_READ_MESSAGE_CONTENT = #{lastReadMessageContent,jdbcType=VARCHAR},
+            <if test="lastMessageContent != null">
+                LAST_MESSAGE_CONTENT = #{lastMessageContent,jdbcType=VARCHAR},
             </if>
             <if test="lastReadMessageId != null">
                 LAST_READ_MESSAGE_ID = #{lastReadMessageId,jdbcType=BIGINT},
             </if>
-            <if test="unreadMessageCount != null">
-                UNREAD_MESSAGE_COUNT = #{unreadMessageCount,jdbcType=INTEGER},
+            <if test="dialogueCreateTime != null">
+                DIALOGUE_CREATE_TIME = #{dialogueCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dialogueUpdateTime != null">
+                DIALOGUE_UPDATE_TIME = #{dialogueUpdateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dialogueIsOnTop != null">
+                DIALOGUE_IS_ON_TOP = #{dialogueIsOnTop,jdbcType=TINYINT},
+            </if>
+            <if test="dialogueOnTopTime != null">
+                DIALOGUE_ON_TOP_TIME = #{dialogueOnTopTime,jdbcType=TIMESTAMP},
             </if>
         </set>
         where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}
@@ -187,9 +232,13 @@
         set DIALOGUE_FRIEND_ID = #{dialogueFriendId,jdbcType=BIGINT},
         DIALOGUE_MYSELF_ID = #{dialogueMyselfId,jdbcType=BIGINT},
         LAST_MESSAGE_ID = #{lastMessageId,jdbcType=BIGINT},
-        LAST_READ_MESSAGE_CONTENT = #{lastReadMessageContent,jdbcType=VARCHAR},
+        LAST_MESSAGE_CONTENT = #{lastMessageContent,jdbcType=VARCHAR},
         LAST_READ_MESSAGE_ID = #{lastReadMessageId,jdbcType=BIGINT},
-        UNREAD_MESSAGE_COUNT = #{unreadMessageCount,jdbcType=INTEGER}
+        DIALOGUE_CREATE_TIME = #{dialogueCreateTime,jdbcType=TIMESTAMP},
+        DIALOGUE_UPDATE_TIME = #{dialogueUpdateTime,jdbcType=TIMESTAMP},
+        DIALOGUE_IS_ON_TOP = #{dialogueIsOnTop,jdbcType=TINYINT},
+        DIALOGUE_ON_TOP_TIME = #{dialogueOnTopTime,jdbcType=TIMESTAMP}
         where DIALOGUE_ID = #{dialogueId,jdbcType=BIGINT}
     </update>
+
 </mapper>
