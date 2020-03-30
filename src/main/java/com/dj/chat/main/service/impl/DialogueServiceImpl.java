@@ -25,4 +25,9 @@ public class DialogueServiceImpl implements DialogueService {
         return baseDialogueMapper.listMyDialogue(accountId, param);
     }
 
+    @Override
+    public void updateByPrimaryKeySelective(BaseDialogue baseDialogue) {
+        baseDialogueMapper.updateByPrimaryKeySelective(baseDialogue);
+    }
+
 }

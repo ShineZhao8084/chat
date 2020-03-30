@@ -1,5 +1,6 @@
 package com.dj.chat.main.service;
 
+import com.dj.chat.main.bean.BaseDialogue;
 import com.dj.chat.main.bean.BaseDialogueExtend;
 
 import java.util.List;
@@ -10,5 +11,5 @@ public interface DialogueService {
 
     List<BaseDialogueExtend> listMyDialogue(Long accountId, String param);
 
-
+    void updateByPrimaryKeySelective(BaseDialogue baseDialogue);
 }

@@ -70,8 +70,8 @@ public class MessageServiceImpl implements MessageService {
         BaseDialogue baseDialogueReceive = baseDialogueMapper.selectByFromAccountIdAndToAccountId(messageReceive.getFromAccountId(), messageReceive.getToAccountId());
         if (null == baseDialogueReceive) {
             BaseDialogue baseDialogue = new BaseDialogue();
-            baseDialogue.setDialogueMyselfId(messageReceive.getFromAccountId());
-            baseDialogue.setDialogueFriendId(messageReceive.getToAccountId());
+            baseDialogue.setDialogueMyselfId(messageReceive.getToAccountId());
+            baseDialogue.setDialogueFriendId(messageReceive.getFromAccountId());
             baseDialogue.setLastMessageId(baseMessageSender.getBaseMessageId());
             baseDialogue.setLastMessageContent(messageReceive.getContentText());
             baseDialogue.setDialogueCreateTime(now);
@@ -79,7 +79,7 @@ public class MessageServiceImpl implements MessageService {
             baseDialogue.setDialogueIsOnTop((byte) 0);
             baseDialogueMapper.insertSelective(baseDialogue);
         } else {
-            baseDialogueReceive.setLastMessageId(baseMessageSender.getBaseMessageId());
+            baseDialogueReceive.setLastMessageId(baseMessageReceive.getBaseMessageId());
             baseDialogueReceive.setLastMessageContent(messageReceive.getContentText());
             baseDialogueReceive.setDialogueUpdateTime(now);
             baseDialogueMapper.updateByFromAccountIdAndToAccountId(baseDialogueReceive);

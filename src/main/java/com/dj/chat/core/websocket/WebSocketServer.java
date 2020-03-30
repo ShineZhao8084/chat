@@ -6,7 +6,9 @@ import com.dj.chat.core.util.SpringUtil;
 import com.dj.chat.core.websocket.bean.MessageReceive;
 import com.dj.chat.core.websocket.bean.MessageReceiveResponse;
 import com.dj.chat.core.websocket.bean.MessageSend;
+import com.dj.chat.main.bean.BaseDialogue;
 import com.dj.chat.main.bean.BaseDialogueResponseWrapper;
+import com.dj.chat.main.service.DialogueService;
 import com.dj.chat.main.service.MessageService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -33,6 +35,7 @@ public class WebSocketServer {
     private Session session;  //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Long accountId;  //accountId
     private MessageService messageService = SpringUtil.getBean(MessageService.class);
+    private DialogueService dialogueService = SpringUtil.getBean(DialogueService.class);
 
     /**
      * 连接建立成功调用的方法
@@ -79,7 +82,7 @@ public class WebSocketServer {
                 String messageType = jsonObject.getString("messageType");
                 JSONObject innerObject = jsonObject.getJSONObject("object");
                 if ("800".equals(messageType)) {  //服务端接收发送消息消息体
-                    MessageReceive messageReceive = (MessageReceive) JSONObject.toJavaObject(innerObject, MessageReceive.class);
+                    MessageReceive messageReceive = JSONObject.toJavaObject(innerObject, MessageReceive.class);
                     String toAccountId = messageReceive.getToAccountId().toString();
                     //追加发送人(防止篡改)
                     messageReceive.setFromAccountId(this.accountId);
@@ -108,7 +111,8 @@ public class WebSocketServer {
                         webSocketMap.get(toAccountId).sendMessage(JSON.toJSONString(messageSendMap));
                     }
                 } else if ("803".equals(messageType)) {
-
+                    BaseDialogue baseDialogue = JSONObject.toJavaObject(innerObject, BaseDialogue.class);
+                    dialogueService.updateByPrimaryKeySelective(baseDialogue);
                 } else {
                     Map<String, String> returnMap = new HashMap<>();
                     returnMap.put("messageType", "500");

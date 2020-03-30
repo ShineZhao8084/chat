@@ -47,6 +47,7 @@
     <select id="listAllMyDialogueByAccountId" parameterType="java.lang.Long" resultMap="BaseResultMapExtend">
         select
             d.DIALOGUE_ID, d.DIALOGUE_FRIEND_ID, d.DIALOGUE_MYSELF_ID, d.LAST_MESSAGE_ID, d.LAST_MESSAGE_CONTENT,
+            d.DIALOGUE_IS_ON_TOP, d.DIALOGUE_ON_TOP_TIME, d.DIALOGUE_UPDATE_TIME,
             d.LAST_READ_MESSAGE_ID,
             a.LOGIN_NAME, f.FRIEND_NAME,
             (
@@ -61,6 +62,7 @@
         left join base_account a on d.DIALOGUE_FRIEND_ID = a.ACCOUNT_ID
         left join base_friend f on d.DIALOGUE_FRIEND_ID = f.FRIEND_ACCOUNT_ID
         where DIALOGUE_MYSELF_ID = #{accountId, jdbcType=BIGINT}
+        order by d.DIALOGUE_IS_ON_TOP desc, d.DIALOGUE_ON_TOP_TIME desc, d.DIALOGUE_UPDATE_TIME desc
     </select>
 
     <select id="listMyDialogue" resultMap="BaseResultMapExtend">

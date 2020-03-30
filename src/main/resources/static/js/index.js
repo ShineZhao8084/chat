@@ -222,7 +222,7 @@ function openSocket() {
         //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
         //等同于socket = new WebSocket("ws://localhost:8888/xxxx/im/25");
         //var socketUrl="${request.contextPath}/im/"+$("#userId").val();
-        var socketUrl = "ws://127.0.0.1/imserver/" + $("#accountId").val();
+        var socketUrl = "ws://10.73.240.25/imserver/" + $("#accountId").val();
         //socketUrl = socketUrl.replace("https", "ws").replace("http", "ws");
         console.log(socketUrl);
         if (socket != null) {
@@ -275,8 +275,17 @@ function openSocket() {
                     html += "</div>";
                     messagesContent.append(html);
                     scrollToBottom();
-                } else {
 
+                    // 发送803回执
+                    let object = {
+                        "dialogueId": currentDialogueId,
+                        "lastMessageId": baseMessage.baseMessageId
+                    };
+                    let dataWrapper = {
+                        "messageType": "803",
+                        "object": object
+                    };
+                    socket.send(JSON.stringify(dataWrapper));
                 }
                 dialogueListData = baseDialogueExtendList;
                 generateDialogueListView();
